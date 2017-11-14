@@ -1,6 +1,53 @@
-Tetris
-Station ID: 94
-- keyboard for input
-- timer controls game clock
-- score displayed on 7-seg
-- audio feedback on row clear
+Proposal:
+  Space Invaders
+  Station: 94
+    VGA graphics
+    Game loop on timer
+    ps/2 keyboard control
+    Score on 7 segs
+    Sound effects through audio codec (maybe)
+
+Tasks:
+  Drawing code
+    ships, enemies, bullets, barriers
+    functions to draw bitmap/letters/shapes
+
+  Keyboard
+    interrupts for input
+    read the input and save keyboard state
+    player input (left, right, space/fire)
+    game state input (reset)
+
+  Timer
+    run game loop at 60fps
+
+  Game loop
+    Enemy movement
+    Player moment
+    Bullet creation/movement
+    Collision detection destroys bullets/enemies, loselife, damage barrier
+
+  Game data
+    Score
+    Lives
+    Enemies left
+    State of barriers
+
+  7seg
+    Display score, lives
+
+Breakdown:
+  Lab 2
+    Drawing
+    Keyboard interrupts
+    Timer interrupts
+
+  Lab 3
+    Player movement
+    Enemy movement
+    Bullet firing
+
+  Lab 4
+    Collision
+    Keep track of score, lives
+    Restart game
