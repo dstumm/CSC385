@@ -1,0 +1,6 @@
+Tetris
+Station ID: 94
+- keyboard for input
+- timer controls game flow
+- score displayed on 7-seg
+- audio feedback on row clear
