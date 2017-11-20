@@ -44,7 +44,11 @@ Breakdown:
 
   Lab 3
     Player movement
+      x
+      
     Enemy movement
+      Enemy direction
+      Array of enemies (x, y, alive)
     Bullet firing
 
   Lab 4
