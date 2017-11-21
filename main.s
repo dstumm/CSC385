@@ -8,22 +8,23 @@
 .equ UP_ARROW_KEY, 0x2
 .equ LEFT_ARROW_KEY, 0x4
 
+
 .align 1
 INPUT_STATE: 
 	.hword 0
 
-.align 2
-# Player state has first byte as life, second byte as score, third and forth as position
-PLAYER_STATE: 
-	.word 0
+.global INPUT_STATE
+.global RIGHT_ARROW_KEY
+.global LEFT_ARROW_KEY
+.global ADDR_LEDS
 
 .section .exceptions, "ax"
 ISR:
-
 	# Save callee
-	addi sp, sp, -8
+	addi sp, sp, -12
 	stw r16, 0(sp)
 	stw r17, 4(sp)
+	stw ea, 8(sp)
 
 	# Check pending register
 	rdctl et, ctl4
@@ -38,6 +39,8 @@ ISR:
 	and r8, r8, et
 	bne r8, r0, KEYBOARD_INTR
 
+	br EXIT_HANDLER
+
 #
 # Process timer interrupt
 #
@@ -46,8 +49,8 @@ TIMER_INTR:
 	movia r8, ADDR_TIMER
 	ldwio r9, 0(r8)
 	andi r9, r9, 2
-	stwio r9, 0(r8)
-	# Process game loop
+	stwio r0, 0(r8)
+	# Main game loop
 	call GameLoop
 	br EXIT_HANDLER
 
@@ -118,7 +121,8 @@ EXIT_HANDLER:
 	# Restore callee
 	ldw r16, 0(sp)
 	ldw r17, 4(sp)
-	addi sp, sp, 8
+	ldw ea, 8(sp)
+	addi sp, sp, 12
 
 	subi ea, ea, 4
 	eret
@@ -133,6 +137,10 @@ EXIT_HANDLER:
 	# Initialize sp
 	movia sp, 0x03FFFFFC
 
+	# Timer
+	movia r8, ADDR_TIMER
+	stwio r0, 0(r8)
+
 	# Zero out leds for testing
 	movia r8, ADDR_LEDS
 	stwio r0, 0(r8)
@@ -140,8 +148,10 @@ EXIT_HANDLER:
 	# Set timer delay and start it
 	movia r8, ADDR_TIMER
 	stwio r0, 0(r8)
-	movia r9, 0x6e6b # 60 fps = 1.666 mhz step = 0x00196e6b
-	movia r10, 0x0019
+	#movia r9, 0x6e6b # 60 fps = 1.666 mhz step = 0x00196e6b
+	#movia r10, 0x0019
+	movia r9, 0x6500 # 0.3 fps = 300 mhz step = 0x1DCD6500
+	movia r10, 0x1DCD
 	stwio r9, 8(r8)
 	stwio r10, 12(r8)
 	movi r9, 7
@@ -163,73 +173,12 @@ EXIT_HANDLER:
 	# "Restart" the game which will initialize
 	call RestartGame
 
-	LOOP:
+LOOP:
+	movia r9, ADDR_LEDS
+	movia r10, INPUT_STATE
+	ldwio r11, 0(r10)
+	stwio r11, 0(r9)
 	br LOOP
-
-#
-# Restart the game
-#
-RestartGame:
-	# Initialize player
-	# Position 160, score 0, life 3
-	movia r8, 0x00A00003
-	movia r9, PLAYER_STATE
-	stw r8, 0(r9)
-
-	# Initialize the enemies
-
-	# Initialize shields
-
-	ret
-
-# 
-# Game logic here
-#
-GameLoop:
-	addi sp, sp, -4
-	stw ra, 0(sp)
-
-	call UpdatePlayer
-
-	ldw ra, 0(sp)
-	addi sp, sp, 4
-	ret
-
-# 
-# Playerlogic
-#
-UpdatePlayer: 
-	# Check pending input
-	movia r9, INPUT_STATE
-	ldh r8, 0(r9)
-
-	# Check if player should move left, move left or fire
-	andi r10, r8, LEFT_ARROW_KEY
-	bne r10, r0, MOVE_LEFT
-	andi r10, r8, RIGHT_ARROW_KEY
-	bne r10, r0, MOVE_RIGHT
-	andi r10, r8, UP_ARROW_KEY
-	bne r10, r0, FIRE
-
-	MOVE_LEFT:
-
-	MOVE_RIGHT:
-
-	FIRE:
-	# Clear the input on fire so key needs to be release and re-pressed
-	movi r11, 0xFF
-	# Get the NOT of KEY_UP
-	xor r10, r10, r11
-	and r10, r10, r8
-	sth r10, 0(r9)
-
-	ret
-
-# 
-# Fire
-#
-Fire:
-	ret
 
 #
 # Parse a set of make or break codes from a keyboard interrupt
@@ -344,10 +293,10 @@ KEY_UP:
 	movia r10, INPUT_STATE
 	#r8 stores key we want, turn that bit OFF in INPUT_STATE
 	ldh r9, 0(r10)
-	movia r10, 0xFFFF
-	xor r8, r8, r10
+	movia r11, 0xFFFF
+	xor r8, r8, r11
 	and r8, r8, r9
-	sth r8, 0(r10)
+	#sth r8, 0(r10)
 	br DONE
 
 KEY_FIRE:
