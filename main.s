@@ -1,12 +1,12 @@
 .data
-.equ ADDR_TIMER 0xff202000
-.equ ADDR_LEDS 0xff200000
-.equ ADDR_7SEG 0xfff00020
-.equ ADDR_KEYBOARD 0xff200100
+.equ ADDR_TIMER, 0xff202000
+.equ ADDR_LEDS, 0xff200000
+.equ ADDR_7SEG, 0xfff00020
+.equ ADDR_KEYBOARD, 0xff200100
 
-.equ RIGHT_ARROW_KEY 0x1
-.equ UP_ARROW_KEY 0x2
-.equ LEFT_ARROW_KEY 0x4
+.equ RIGHT_ARROW_KEY, 0x1
+.equ UP_ARROW_KEY, 0x2
+.equ LEFT_ARROW_KEY, 0x4
 
 .align 1
 INPUT_STATE: 
@@ -21,7 +21,7 @@ PLAYER_STATE:
 ISR:
 
   # Save callee
-  addi sp, sp -8
+  addi sp, sp, -8
   stw r16, 0(sp)
   stw r17, 4(sp)
 
@@ -64,13 +64,13 @@ NOT_VALID:
 	# Data is valid
 	# Get how many characters left to read
   mov r16, r9
-	srli, r16, r16, 16
+	srli r16, r16, 16
 	# r16 has pending number of codes
 
 # Read command may consist of consequtive codes
 READ_COMMAND:
   # Starting there is zero codes
-  mov, r17, r0
+  mov r17, r0
 
 READ_CODE:
 	# Get the make/break code.
@@ -82,7 +82,7 @@ READ_CODE:
   addi r17, r17, 1
 
 	# Decrement data counter
-	subi r16, r16 1
+	subi r16, r16, 1
 
   # If its EO is non-single code command, so we read another code in
   movi r10, 0xE0
@@ -97,8 +97,8 @@ READ_CODE:
   call ParseKey
 
   # Restore stack pointer by multiply r2 by 4 and adding
-  sll r17, r17, 2
-  addi sp, sp, r17
+  slli r17, r17, 2
+  add sp, sp, r17
 
   # After parse if there's another code, it means there are more commands so read another, otherwise exit
 	bgt r16, r0, NEXT_COMMAND
@@ -118,7 +118,7 @@ EXIT_HANDLER:
   # Restore callee
   ldw r16, 0(sp)
   ldw r17, 4(sp)
-  addi sp, sp 8
+  addi sp, sp, 8
 
 	subi ea, ea, 4
 	eret
@@ -130,6 +130,9 @@ EXIT_HANDLER:
 # Main
 #
 _start:
+
+	# Initialize sp
+	movia sp, 0x03FFFFFC
 
   # Zero out leds for testing
 	movia r8, ADDR_LEDS
@@ -147,7 +150,7 @@ _start:
 
 	# Set read interrupts for keyboard
 	movia r8, ADDR_KEYBOARD
-	movi, r9, 1
+	movi r9, 1
 	stwio r9, 0(r8)
 	
 	# Enable IRQ for timer/keyboard (IRQ 0 and IRQ 7 respectively)
@@ -170,7 +173,7 @@ LOOP:
 RestartGame:
   # Initialize player
   # Position 160, score 0, life 3
-  movi r8, 0x00A00003
+  movia r8, 0x00A00003
   movia r9, PLAYER_STATE
   stw r8, 0(r9)
 
@@ -199,7 +202,7 @@ GameLoop:
 UpdatePlayer: 
   # Check pending input
   movia r9, INPUT_STATE
-  ldh r8 0(INPUT_STATE)
+  ldh r8, 0(r9)
 
   # Check if player should move left, move left or fire
   andi r10, r8, LEFT_ARROW_KEY
@@ -250,7 +253,7 @@ FIRST_ARGUMENT:
 
 SECOND_ARGUMENT:
   # Second argument
-  addi r10, 4
+  addi r10, r10, 4
   ldw r8, 0(r10)
 
   # If its 75 its up arrow
@@ -275,7 +278,7 @@ SECOND_ARGUMENT:
 
 THIRD_ARGUMENT:
   # Third argument
-  addi r10, 4
+  addi r10, r10, 4
   ldw r8, 0(r10)
 
   # If its 75 its up arrow
@@ -317,18 +320,20 @@ RIGHT_ARROW_UP:
 
 KEY_DOWN:
   # r8 stores key we want, turn that bit ON in input_state
-  ldh r9, 0(INPUT_STATE)
+	movia r10, INPUT_STATE
+  ldh r9, 0(r10)
   or r8, r8, r9
-  sth r8, 0(INPUT_STATE)
+  sth r8, 0(r10)
   br DONE
 
 KEY_UP:
+	movia r10, INPUT_STATE
   #r8 stores key we want, turn that bit OFF in INPUT_STATE
-  ldhw r9, 0(INPUT_STATE)
-  movi r10, 0xFFFF
-  xori r8, r8, r10
+  ldh r9, 0(r10)
+  movia r10, 0xFFFF
+  xor r8, r8, r10
   and r8, r8, r9
-  sth r8, 0(INPUT_STATE)
+  sth r8, 0(r10)
   br DONE
 
 RESTART:
