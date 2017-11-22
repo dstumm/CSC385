@@ -1,3 +1,7 @@
 November 20th, 2017
 - James: Finished keyboard and timer interrupt code, handling of specific codes with respect to game logic.
-- David:
+- David: Initial drawing code in c
+
+November 21st, 2017
+- James: After troubles in the lab I got the keyboard code working in the
+simulator.

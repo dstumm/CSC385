@@ -18,114 +18,6 @@ INPUT_STATE:
 .global LEFT_ARROW_KEY
 .global ADDR_LEDS
 
-.section .exceptions, "ax"
-ISR:
-	# Save callee
-	addi sp, sp, -12
-	stw r16, 0(sp)
-	stw r17, 4(sp)
-	stw ea, 8(sp)
-
-	# Check pending register
-	rdctl et, ctl4
-
-	# Timer interrupt
-	movi r8, 1
-	and r8, r8, et
-	bne r8, r0, TIMER_INTR
-
-	# Keyboard interrupt
-	movi r8, 0x80
-	and r8, r8, et
-	bne r8, r0, KEYBOARD_INTR
-
-	br EXIT_HANDLER
-
-#
-# Process timer interrupt
-#
-TIMER_INTR:
-	# Clear timout
-	movia r8, ADDR_TIMER
-	ldwio r9, 0(r8)
-	andi r9, r9, 2
-	stwio r0, 0(r8)
-	# Main game loop
-	call GameLoop
-	br EXIT_HANDLER
-
-#
-# Process keyboard interrupt
-#
-KEYBOARD_INTR:
-	# poll bit 15 until valid
-	movia r8, ADDR_KEYBOARD
-NOT_VALID:
-	ldwio r9, 0(r8)
-	andi r10, r9, 0x8000
-	beq r10, r0, NOT_VALID
-	# Data is valid
-	# Get how many characters left to read
-	mov r16, r9
-	srli r16, r16, 16
-	# r16 has pending number of codes
-
-	# Read command may consist of consequtive codes
-READ_COMMAND:
-	# Starting there is zero codes
-	mov r17, r0
-
-READ_CODE:
-	# Get the make/break code.
-	andi r8, r9, 0xff
-
-	# Add code to stack and record code addition
-	addi sp, sp, -4
-	stw r8, 0(sp)
-	addi r17, r17, 1
-
-	# Decrement data counter
-	subi r16, r16, 1
-
-	# If its EO is non-single code command, so we read another code in
-	movi r10, 0xE0
-	beq r8, r10, NEXT_CODE
-
-	# If its FO its part of a break command 
-	movi r10, 0xF0
-	beq r8, r10, NEXT_CODE
-
-	# Otherwise were at the end of the command, call parse, r4 holds number of arguments on stack
-	mov r4, r17
-	call ParseKey
-
-	# Restore stack pointer by multiply r2 by 4 and adding
-	slli r17, r17, 2
-	add sp, sp, r17
-
-	# After parse if there's another code, it means there are more commands so read another, otherwise exit
-	bgt r16, r0, NEXT_COMMAND
-	br EXIT_HANDLER
-
-NEXT_COMMAND:
-	movia r8, ADDR_KEYBOARD
-	ldwio r9, 0(r8)
-	br READ_COMMAND
-
-NEXT_CODE:
-	movia r8, ADDR_KEYBOARD
-	ldwio r9, 0(r8)
-	br READ_CODE
-
-EXIT_HANDLER:
-	# Restore callee
-	ldw r16, 0(sp)
-	ldw r17, 4(sp)
-	ldw ea, 8(sp)
-	addi sp, sp, 12
-
-	subi ea, ea, 4
-	eret
 
 .text
 .global _start
@@ -179,6 +71,115 @@ LOOP:
 	ldwio r11, 0(r10)
 	stwio r11, 0(r9)
 	br LOOP
+
+.section .exceptions, "ax"
+ISR:
+	# Save every register used ¯\_(ツ)_/¯
+	addi sp, sp, -28
+	stw r4, 0(sp)
+	stw r8 4(sp)
+  stw r9, 8(sp)
+  stw r10, 12(sp)
+  stw r16, 16(sp)
+	stw r17, 20(sp)
+	stw ra, 24(sp)
+	#stw ea, 28(sp)
+
+	# Check pending register
+	rdctl et, ctl4
+
+	# Timer interrupt
+	movi r8, 1
+	and r8, r8, et
+	bne r8, r0, TIMER_INTR
+
+	# Keyboard interrupt
+	movi r8, 0x80
+	and r8, r8, et
+	bne r8, r0, KEYBOARD_INTR
+
+	br EXIT_HANDLER
+
+#
+# Process timer interrupt
+#
+TIMER_INTR:
+	# Clear timout
+	movia r8, ADDR_TIMER
+	ldwio r9, 0(r8)
+	andi r9, r9, 2
+	stwio r0, 0(r8)
+  call GameLoop
+	br EXIT_HANDLER
+
+#
+# Process keyboard interrupt
+#
+KEYBOARD_INTR:
+	# Read command may consist of consequtive codes
+READ_COMMAND:
+	# Starting there is zero codes
+	mov r17, r0
+NOT_VALID:
+	# poll bit 15 until valid
+	movia r8, ADDR_KEYBOARD
+	ldwio r9, 0(r8)
+	andi r10, r9, 0x8000
+	beq r10, r0, NOT_VALID
+	# Data is valid
+	# Get how many characters left to read
+	mov r16, r9
+	srli r16, r16, 16
+	# r16 has pending number of codes
+
+	# Get the make/break code.
+	andi r8, r9, 0xff
+
+	# Add code to stack and record code addition
+	addi sp, sp, -4
+	stw r8, 0(sp)
+	addi r17, r17, 1
+
+	# Decrement data counter
+	subi r16, r16, 1
+
+	# If its EO is non-single code command, so we read another code in
+	movi r10, 0xE0
+	beq r8, r10, NEXT_CODE
+
+	# If its FO its part of a break command 
+	movi r10, 0xF0
+	beq r8, r10, NEXT_CODE
+
+	# Otherwise were at the end of the command, call parse, r4 holds number of arguments on stack
+	mov r4, r17
+	call ParseKey
+
+	# Restore stack pointer by multiply r2 by 4 and adding
+	slli r17, r17, 2
+	add sp, sp, r17
+
+	# After parse if there's another code, it means there are more commands so read another, otherwise exit
+	bgt r16, r0, READ_COMMAND
+	br EXIT_HANDLER
+
+NEXT_CODE:
+	br NOT_VALID
+
+EXIT_HANDLER:
+	# Restore them
+	ldw r4, 0(sp)
+	ldw r8 4(sp)
+  ldw r9, 8(sp)
+  ldw r10, 12(sp)
+  ldw r16, 16(sp)
+	ldw r17, 20(sp)
+	ldw ra, 24(sp)
+	#ldw ea, 28(sp)
+	addi sp, sp, 28
+
+	subi ea, ea, 4
+	eret
 
 #
 # Parse a set of make or break codes from a keyboard interrupt
@@ -293,8 +294,8 @@ KEY_UP:
 	movia r10, INPUT_STATE
 	#r8 stores key we want, turn that bit OFF in INPUT_STATE
 	ldh r9, 0(r10)
-	movia r11, 0xFFFF
-	xor r8, r8, r11
+	movia r10, 0xFFFF
+	xor r8, r8, r10
 	and r8, r8, r9
 	#sth r8, 0(r10)
 	br DONE
