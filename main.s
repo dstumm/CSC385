@@ -66,24 +66,19 @@ INPUT_STATE:
 	call RestartGame
 
 LOOP:
-	movia r9, ADDR_LEDS
-	movia r10, INPUT_STATE
-	ldwio r11, 0(r10)
-	stwio r11, 0(r9)
 	br LOOP
 
 .section .exceptions, "ax"
 ISR:
-	# Save every register used ¯\_(ツ)_/¯
+	# Save every register used 
 	addi sp, sp, -28
 	stw r4, 0(sp)
 	stw r8 4(sp)
-  stw r9, 8(sp)
-  stw r10, 12(sp)
-  stw r16, 16(sp)
+	stw r9, 8(sp)
+	stw r10, 12(sp)
+	stw r16, 16(sp)
 	stw r17, 20(sp)
 	stw ra, 24(sp)
-	#stw ea, 28(sp)
 
 	# Check pending register
 	rdctl et, ctl4
@@ -170,12 +165,11 @@ EXIT_HANDLER:
 	# Restore them
 	ldw r4, 0(sp)
 	ldw r8 4(sp)
-  ldw r9, 8(sp)
-  ldw r10, 12(sp)
-  ldw r16, 16(sp)
+	ldw r9, 8(sp)
+	ldw r10, 12(sp)
+	ldw r16, 16(sp)
 	ldw r17, 20(sp)
 	ldw ra, 24(sp)
-	#ldw ea, 28(sp)
 	addi sp, sp, 28
 
 	subi ea, ea, 4
@@ -294,10 +288,9 @@ KEY_UP:
 	movia r10, INPUT_STATE
 	#r8 stores key we want, turn that bit OFF in INPUT_STATE
 	ldh r9, 0(r10)
-	movia r10, 0xFFFF
-	xor r8, r8, r10
+	xori r8, r8, 9xFFFF
 	and r8, r8, r9
-	#sth r8, 0(r10)
+	sth r8, 0(r10)
 	br DONE
 
 KEY_FIRE:
