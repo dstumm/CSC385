@@ -58,6 +58,8 @@ TEST:
 .global PLAYER_YPOS
 .global SHIELD_POSITIONS
 .global SHIELDS
+.global PushAll
+.global PopAll
 
 .text
 
@@ -120,24 +122,87 @@ INIT_SHIELD:
 
 	ret
 
+PushAll:
+	addi sp, sp, -104
+	stw r2, 0(sp)
+	stw r3, 4(sp)
+	stw r4, 8(sp)
+	stw r5, 12(sp)
+	stw r6, 16(sp)
+	stw r7, 20(sp)
+	stw r8, 24(sp)
+	stw r9, 28(sp)
+	stw r10, 32(sp)
+	stw r11, 36(sp)
+	stw r12, 40(sp)
+	stw r13, 44(sp)
+	stw r14, 48(sp)
+	stw r15, 52(sp)
+	stw r16, 56(sp)
+	stw r17, 60(sp)
+	stw r18, 64(sp)
+	stw r19, 68(sp)
+	stw r20, 72(sp)
+	stw r21, 76(sp)
+	stw r22, 80(sp)
+	stw r23, 84(sp)
+	stw r24, 88(sp)
+	stw r25, 92(sp)
+	stw r26, 96(sp)
+	stw fp, 100(sp)
+	ret
+
+PopAll:
+	ldw r2, 0(sp)
+	ldw r3, 4(sp)
+	ldw r4, 8(sp)
+	ldw r5, 12(sp)
+	ldw r6, 16(sp)
+	ldw r7, 20(sp)
+	ldw r8, 24(sp)
+	ldw r9, 28(sp)
+	ldw r10, 32(sp)
+	ldw r11, 36(sp)
+	ldw r12, 40(sp)
+	ldw r13, 44(sp)
+	ldw r14, 48(sp)
+	ldw r15, 52(sp)
+	ldw r16, 56(sp)
+	ldw r17, 60(sp)
+	ldw r18, 64(sp)
+	ldw r19, 68(sp)
+	ldw r20, 72(sp)
+	ldw r21, 76(sp)
+	ldw r22, 80(sp)
+	ldw r23, 84(sp)
+	ldw r24, 88(sp)
+	ldw r25, 92(sp)
+	ldw r26, 96(sp)
+	ldw fp, 100(sp)
+	addi sp, sp, 104
+	ret
 # 
 # Game logic here
 #
 GameLoop:
-	addi sp, sp, -36
+	addi sp, sp, -4
 	stw ra, 0(sp)
-  	stw r8, 4(sp)
-  	stw r9, 8(sp)
-  	stw r10, 12(sp)
-  	stw r11, 16(sp)
-	stw r16, 20(sp)
-	stw r17, 24(sp)
-	stw r18, 28(sp)
-	stw r19, 32(sp)
+  	#stw r8, 4(sp)
+  	#stw r9, 8(sp)
+  	#stw r10, 12(sp)
+  	#stw r11, 16(sp)
+	#stw r16, 20(sp)
+	#stw r17, 24(sp)
+	#stw r18, 28(sp)
+	#stw r19, 32(sp)
+
+	call PushAll
 
 	call drawing_clear_buffer
-	movia r4, TEST
-	movia r5, 0xffff
+
+	call PopAll
+	#movia r4, TEST
+	#movia r5, 0xffff
 	#call drawing_fill_rect
 
   #call UpdatePlayer
@@ -146,15 +211,15 @@ GameLoop:
 
 	#call drawing_swap_buffers
 	ldw ra, 0(sp)
- 	 ldw r8, 4(sp)
- 	 ldw r9, 8(sp)
-  	ldw r10, 12(sp)
-  	ldw r11, 16(sp)
-	ldw r16, 20(sp)
-	ldw r17, 24(sp)
-	ldw r18, 28(sp)
-	ldw r19, 32(sp)
-	addi sp, sp, 36
+ 	 #ldw r8, 4(sp)
+ 	 #ldw r9, 8(sp)
+  	#ldw r10, 12(sp)
+  	#ldw r11, 16(sp)
+	#ldw r16, 20(sp)
+	#ldw r17, 24(sp)
+	#ldw r18, 28(sp)
+	#ldw r19, 32(sp)
+	addi sp, sp, 4
 	ret
 # 
 # Playerlogic
