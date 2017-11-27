@@ -5,6 +5,18 @@ volatile unsigned int *BACK_BUFFER_REGISTER = (unsigned int *)0xFF203024;
 volatile unsigned int *RESOLUTION_REGISTER = (unsigned int *)0xFF203028;
 volatile unsigned int *STATUS_REGISTER = (unsigned int *)0xFF20302C;
 
+typedef struct point_t {
+	unsigned short x;
+	unsigned short y;
+} point_t;
+
+typedef struct rect_t {
+	unsigned short x;
+	unsigned short y;
+	unsigned short width;
+	unsigned short height;
+} rect_t;
+
 typedef struct buffer_t {
     unsigned int base;
     unsigned int addressing_mode;
@@ -47,9 +59,11 @@ int drawing_print_buffer_info() {
  * Init buffer info and back buffer.
  */
 int drawing_init(unsigned int back_buffer_addr) {
-    // set back buffer address
-    *BACK_BUFFER_REGISTER = back_buffer_addr;
-    
+    // set back buffer address (if it hasn't already been set)
+	if (*BACK_BUFFER_REGISTER == *BUFFER_REGISTER) {
+		*BACK_BUFFER_REGISTER = back_buffer_addr;
+	}
+
     // assume defaults for now
     buffer.base = back_buffer_addr;
     buffer.addressing_mode = 1;
@@ -91,15 +105,15 @@ int drawing_clear_buffer() {
 /**
  * Draw a single pixel to the back buffer.
  */
-int drawing_draw_pixel(unsigned int x, unsigned int y, unsigned int color) {
+int drawing_draw_pixel(unsigned short x, unsigned short y, unsigned short color) {
     // boundary check
     if (x >= buffer.x_resolution || y >= buffer.y_resolution) {
         return -1;
     }
 
     volatile short *addr = (short *)buffer.base;
-    unsigned offset = (y << buffer.wib) + x;
-    *(addr + offset) = (short)color;
+    unsigned int offset = (y << buffer.wib) + x;
+    *(addr + offset) = color;
 
     return 0;
 }
@@ -108,36 +122,100 @@ int drawing_draw_pixel(unsigned int x, unsigned int y, unsigned int color) {
  * Fill a rectangle in the back buffer.
  * Truncates to fit the screen.
  */
-int drawing_fill_rect(unsigned int x_start, unsigned int y_start, unsigned int width, unsigned int height, unsigned int color) {
+int drawing_fill_rect(rect_t *rect, unsigned short color) {
     // boundary check
-    if (x_start >= buffer.x_resolution || y_start >= buffer.y_resolution) {
+    if (rect->x >= buffer.x_resolution || rect->y >= buffer.y_resolution) {
         return -1;
     }
 
     volatile short *addr = (short *)buffer.base;
-    unsigned int x, y, x_end, y_end, x_limit, y_limit, y_offset;
+	unsigned short x, y, y_offset,
+				   x1 = rect->x,
+				   y1 = rect->y,
+				   x2 = x1 + rect->width,
+				   y2 = y1 + rect->height;
     
     // clip x coordinates to the screen
-    x_limit = buffer.x_resolution;
-    x_end = x + width;
-    if (x_end >= x_limit) {
-        x_end = x_limit;
+   	if (x2 >= buffer.x_resolution){
+		x2 = buffer.x_resolution - 1;
     }
 
     // clip y coordinates to the screen
-    y_limit = buffer.y_resolution;
-    y_end = y + height;
-    if (y_end >= y_limit) {
-        y_end = y_limit;
+    if (y2 >= buffer.y_resolution) {
+        y2 = buffer.y_resolution - 1;
     }
     
-    addr += (y << buffer.wib);
-    for (y = y_start; y < y_end; y++) {
-        for (x = x_start; x < x_end; x++) {
-            *(addr + x) = (short)color;
+    addr += (y1 << buffer.wib);
+    for (y = y1; y < y2; y++) {
+        for (x = x1; x < x2; x++) {
+            *(addr + x) = color;
         }
         addr += (1 << buffer.wib);
     }
  
     return 0;
+}
+
+/**
+ * Draw a horizontal line to the back buffer.
+ */
+int drawing_draw_hline(unsigned short x1, unsigned short x2, unsigned short y, unsigned short color) {
+	if (x1 > x2) {
+		unsigned short temp = x1;
+		x1 = x2;
+		x2 = x1;
+	}
+	
+	// boundary check	
+	if (x1 >= buffer.x_resolution || y >= buffer.y_resolution) {
+		return -1;
+	}
+	
+	// clip to screen
+	if (x2 >= buffer.x_resolution) {
+		x2 = buffer.x_resolution - 1;
+	}
+	
+
+	volatile short *addr = (short *)buffer.base + (y << buffer.wib);
+	for (; x1 <= x2; x1++) {
+		*(addr + x1) = color;
+	}
+	
+	return 0;
+}
+
+/**
+ * Draw a bitmap to the back buffer.
+ */
+int drawing_draw_bitmap(struct rect_t *rect, char *bitmap, unsigned short color) {
+	// boundary check
+	if (rect->x >= buffer.x_resolution || rect->y >= buffer.y_resolution) {
+		return -1;
+	}
+
+	unsigned short x_end = rect->x + rect->width,
+				   y_end = rect->y + rect->height;
+
+	// clip to screen
+	if (x_end > buffer.x_resolution) {
+		x_end = buffer.x_resolution;
+	}
+
+	if (y_end > buffer.y_resolution) {
+		y_end = buffer.y_resolution;
+	}
+
+    volatile short *addr = (short *)buffer.base + (rect->y << buffer.wib);
+	for (unsigned short i = rect->y; i < y_end; i++) {
+		for (unsigned short j = rect->x; j < y_end; j++) {
+			if (*bitmap > 0) {
+				*(addr + j) = color;
+			}
+			bitmap++;
+			addr += (1 << buffer.wib);
+		}
+	}
+
+	return 0;
 }
