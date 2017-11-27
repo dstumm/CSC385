@@ -30,7 +30,7 @@ INPUT_STATE:
 	main:
 
 	# Initialize sp
-	movia sp, 0x03FFFFFC
+	#movia sp, 0x03FFFFFC
 
 	# Timer
 	movia r8, ADDR_TIMER

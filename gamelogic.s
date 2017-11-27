@@ -124,29 +124,37 @@ INIT_SHIELD:
 # Game logic here
 #
 GameLoop:
-	addi sp, sp, -20
+	addi sp, sp, -36
 	stw ra, 0(sp)
-  stw r8, 4(sp)
-  stw r9, 8(sp)
-  stw r10, 12(sp)
-  stw r11, 16(sp)
+  	stw r8, 4(sp)
+  	stw r9, 8(sp)
+  	stw r10, 12(sp)
+  	stw r11, 16(sp)
+	stw r16, 20(sp)
+	stw r17, 24(sp)
+	stw r18, 28(sp)
+	stw r19, 32(sp)
 
 	call drawing_clear_buffer
 	movia r4, TEST
 	movia r5, 0xffff
-	call drawing_fill_rect
+	#call drawing_fill_rect
 
-  call UpdatePlayer
-  call UpdateBullets
-  call CheckCollision
+  #call UpdatePlayer
+  #call UpdateBullets
+  #call CheckCollision
 
-	call drawing_swap_buffers
+	#call drawing_swap_buffers
 	ldw ra, 0(sp)
-  ldw r8, 4(sp)
-  ldw r9, 8(sp)
-  ldw r10, 12(sp)
-  ldw r11, 16(sp)
-	addi sp, sp, 20
+ 	 ldw r8, 4(sp)
+ 	 ldw r9, 8(sp)
+  	ldw r10, 12(sp)
+  	ldw r11, 16(sp)
+	ldw r16, 20(sp)
+	ldw r17, 24(sp)
+	ldw r18, 28(sp)
+	ldw r19, 32(sp)
+	addi sp, sp, 36
 	ret
 # 
 # Playerlogic
