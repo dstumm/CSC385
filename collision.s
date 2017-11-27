@@ -7,13 +7,14 @@
 .text
 .global CheckCollision
 CheckCollision:
-  addi sp, sp, -20
+  addi sp, sp, -28
   stw r16, 0(sp)
   stw r17, 4(sp)
   stw r18, 8(sp)
   stw r19, 12(sp)
   stw r20, 16(sp)
-  stw r21, 18(sp)
+  stw r21, 20(sp)
+	stw ra, 24(sp)
 
   # Check player bullet against enemies, shields
 
@@ -27,8 +28,9 @@ COLLISION_DONE:
   ldw r18, 8(sp)
   ldw r19, 12(sp)
   ldw r20, 16(sp)
-  ldw r21, 18(sp)
-  addi sp, sp, 24
+  ldw r21, 20(sp)
+	ldw ra, 24(sp)
+  addi sp, sp, 28
   ret
 
 CheckEnemyBullets:
@@ -45,9 +47,9 @@ CHECK_ENEMY_BULLETS:
 ENEMY_B_CHECK:
   movia r8, ENEMY_BULLETS
   slli r9, r17, 2       # Multiply counter by 4
-  add r8, r9, r9
+  add r8, r8, r9
   ldw r18, 0(r8)        # Save reference to bullet
-  beq r18, r0, NEXT_B
+  beq r18, r0, CHECK_NEXT_B
 
   # Valid bullet, check collision against player and shields
   # Player first
@@ -191,6 +193,51 @@ CheckShield:
   # If theres no collision return
   bne r2, r0, SHIELD_COL
   br SHIELD_NOCOL
+
+
+SHIELD_COL_SIMPLIFIED:
+	# Get the shield position
+	movia r8, SHIELD_POSITIONS
+	add r8, r16, r8
+	add r8, r17, r8 # r9 has true shield position
+	
+	# Get the offset of the bullet into the shield
+	sub r8, r4, r8 # offset of bullet into shield
+	# Add the height of the bullet in
+	movia r10, 0xFFFF0000
+	and r10, r18, r10
+	add r8, r8, r10
+	
+  # Get the row bit, and shift a 1 to that position (i.e. 3 = 0b1000
+  andi r9, r8, 0xFFFF
+  movia r10, 0x80000000 # 1 in the highest position
+  srl r10, r10, r9
+
+  # Get the column offset, and shift it up 8xcolumn
+  srli r9, r8, 16
+  slli r9, r9, 3  # x 8
+
+  # Get final bitmap
+  srl r10, r10, r9
+
+  # Get the value of this bit
+  movia r8, SHIELDS
+  add r8, r8, r16
+  ldw r9, 0(r8)        # Load shield itself
+	 
+  and r10, r10, r9
+
+  # Return whethers theres a collision or not
+  beq r10, r0, SHIELD_NOCOL
+  # If theres a collision flip the bit off, return a 1
+  movi r11, 0xFFFFFFFF
+  xor r10, r10, r11
+  and r9, r9, r19
+  stw r9, 0(r8)
+  movi r2, 1
+  br CHECK_SHIELD_DONE
+  movi r2, 0
+  br CHECK_SHIELD_DONE
 
 SHIELD_COL:
   # We have a collision, are we at the base case? (size = 1x1)

@@ -8,13 +8,18 @@
         <terminal>JTAG_UART</terminal>
     </system>
     <program>
-        <type>Assembly Program</type>
+        <type>C Program</type>
         <source_files>
-            <source_file filepath="true">main.s</source_file>
+            <source_file filepath="true">drawing.c</source_file>
+            <source_file filepath="true">collision.s</source_file>
             <source_file filepath="true">gamelogic.s</source_file>
+            <source_file filepath="true">interrupts.s</source_file>
+            <source_file filepath="true">main.s</source_file>
         </source_files>
         <options>
-            <start_symbol>_start</start_symbol>
+            <compiler_flags>-g -O0 -ffunction-sections -fverbose-asm -fno-inline -mno-cache-volatile</compiler_flags>
+            <emulate_unimpl_instructions>true</emulate_unimpl_instructions>
+            <use_small_c_library>false</use_small_c_library>
         </options>
         <linker_sections>
             <linker_section name=".reset">
