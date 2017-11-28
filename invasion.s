@@ -109,9 +109,9 @@ DRAW_INVASION:
 
         addi r16, r16, 1                            # next row
 
-        movi r4, GRID_HEIGHT                        # increase y position
+        movi r4, GRID_HEIGHT                        # decrease y position
         slli r4, r4, 16
-        add r21, r21, r4
+        sub r21, r21, r4
 
         movi r4, ALIEN_ROWS
         blt r16, r4, DRAW_ALIEN_ROW                 # rows done?
