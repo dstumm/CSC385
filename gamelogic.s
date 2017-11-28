@@ -5,8 +5,6 @@
 .equ SCREEN_HEIGHT, 240
 .equ SCREEN_WIDTH, 320
 
-.equ PLAYER_YPOS, 0x00C00000 # Player sits a height 32 from the bottom (240-32-playerheight(16) = 192) (from the bottom) at the moment, assuming top-left (0,0)
-
 .align 2
 # Player state has first and second as x position, third byte as life, fourth byte as score, 
 PLAYER_STATE: 
@@ -55,20 +53,18 @@ TEST:
 .global PLAYER_STATE
 .global PLAYER_BULLET
 .global ENEMY_BULLETS
-.global PLAYER_YPOS
 .global SHIELD_POSITIONS
 .global SHIELDS
 .global PushAll
 .global PopAll
-
-.text
+.global TICK
 
 .global RestartGame
 .global GameLoop
 .global Fire
 .global PlayerHit
-.global Tick
 
+.text
 #
 # Restart the game
 #
@@ -122,75 +118,16 @@ INIT_SHIELD:
 
 	ret
 
-PushAll:
-	addi sp, sp, -104
-	stw r2, 0(sp)
-	stw r3, 4(sp)
-	stw r4, 8(sp)
-	stw r5, 12(sp)
-	stw r6, 16(sp)
-	stw r7, 20(sp)
-	stw r8, 24(sp)
-	stw r9, 28(sp)
-	stw r10, 32(sp)
-	stw r11, 36(sp)
-	stw r12, 40(sp)
-	stw r13, 44(sp)
-	stw r14, 48(sp)
-	stw r15, 52(sp)
-	stw r16, 56(sp)
-	stw r17, 60(sp)
-	stw r18, 64(sp)
-	stw r19, 68(sp)
-	stw r20, 72(sp)
-	stw r21, 76(sp)
-	stw r22, 80(sp)
-	stw r23, 84(sp)
-	stw r24, 88(sp)
-	stw r25, 92(sp)
-	stw r26, 96(sp)
-	stw fp, 100(sp)
-	ret
-
-PopAll:
-	ldw r2, 0(sp)
-	ldw r3, 4(sp)
-	ldw r4, 8(sp)
-	ldw r5, 12(sp)
-	ldw r6, 16(sp)
-	ldw r7, 20(sp)
-	ldw r8, 24(sp)
-	ldw r9, 28(sp)
-	ldw r10, 32(sp)
-	ldw r11, 36(sp)
-	ldw r12, 40(sp)
-	ldw r13, 44(sp)
-	ldw r14, 48(sp)
-	ldw r15, 52(sp)
-	ldw r16, 56(sp)
-	ldw r17, 60(sp)
-	ldw r18, 64(sp)
-	ldw r19, 68(sp)
-	ldw r20, 72(sp)
-	ldw r21, 76(sp)
-	ldw r22, 80(sp)
-	ldw r23, 84(sp)
-	ldw r24, 88(sp)
-	ldw r25, 92(sp)
-	ldw r26, 96(sp)
-	ldw fp, 100(sp)
-	addi sp, sp, 104
-	ret
 # 
 # Game logic here
 #
 GameLoop:
 	addi sp, sp, -4
 	stw ra, 0(sp)
-  	#stw r8, 4(sp)
-  	#stw r9, 8(sp)
-  	#stw r10, 12(sp)
-  	#stw r11, 16(sp)
+  #stw r8, 4(sp)
+  #stw r9, 8(sp)
+  #stw r10, 12(sp)
+  #stw r11, 16(sp)
 	#stw r16, 20(sp)
 	#stw r17, 24(sp)
 	#stw r18, 28(sp)
@@ -200,27 +137,31 @@ GameLoop:
 
 	call drawing_clear_buffer
 
+	movia r4, TEST
+	movia r5, 0xffff
+	call drawing_fill_rect
+
+	call drawing_swap_buffers
+
 	call PopAll
-	#movia r4, TEST
-	#movia r5, 0xffff
-	#call drawing_fill_rect
 
   #call UpdatePlayer
   #call UpdateBullets
   #call CheckCollision
 
-	#call drawing_swap_buffers
+  
 	ldw ra, 0(sp)
- 	 #ldw r8, 4(sp)
- 	 #ldw r9, 8(sp)
-  	#ldw r10, 12(sp)
-  	#ldw r11, 16(sp)
+	addi sp, sp, 4
+ 	#ldw r8, 4(sp)
+ 	#ldw r9, 8(sp)
+  #ldw r10, 12(sp)
+  #ldw r11, 16(sp)
 	#ldw r16, 20(sp)
 	#ldw r17, 24(sp)
 	#ldw r18, 28(sp)
 	#ldw r19, 32(sp)
-	addi sp, sp, 4
 	ret
+
 # 
 # Playerlogic
 #
@@ -261,8 +202,8 @@ MOVE_RIGHT:
 	br MOVE_APPLY
     
 MOVE_APPLY:
-    movia r10, 0xFFFF0000
-    and r8, r8, r10
+  movia r10, 0xFFFF0000
+  and r8, r8, r10
 	andi r9, r9, 0xFFFF
 	or r8, r8, r9
 	br PLAYER_DONE
@@ -275,7 +216,7 @@ PLAYER_DONE:
 	# Draw it
 	movia r4, PLAYER_STATE
 	movia r5, 0x2FD6
-	call drawing_fill_rect
+	#call drawing_fill_rect
 
 	# Write player position to the leds
 	#movia r9, ADDR_LEDS
@@ -298,9 +239,6 @@ Fire:
   # Get the players position with the y in the upper bits, x in the lower bits
   movia r9, PLAYER_STATE
   ldw r8, 0(r9)
-  andi r8, r8, 0xFFFF
-  movia r9, PLAYER_YPOS
-  or r8, r8, r9
 
   # Add an offset of half the players width (-y +x), and enough height to fire above the player (assume width 16 height 8)
   movia r9, 0xFFFC0008
@@ -431,5 +369,59 @@ PLAYER_HIT_DONE:
 	addi sp, sp, 4
   ret 
 
+PushAll:
+	addi sp, sp, -96
+	stw r2, 0(sp)
+	stw r3, 4(sp)
+	stw r4, 8(sp)
+	stw r5, 12(sp)
+	stw r6, 16(sp)
+	stw r7, 20(sp)
+	stw r8, 24(sp)
+	stw r9, 28(sp)
+	stw r10, 32(sp)
+	stw r11, 36(sp)
+	stw r12, 40(sp)
+	stw r13, 44(sp)
+	stw r14, 48(sp)
+	stw r15, 52(sp)
+	stw r16, 56(sp)
+	stw r17, 60(sp)
+	stw r18, 64(sp)
+	stw r19, 68(sp)
+	stw r20, 72(sp)
+	stw r21, 76(sp)
+	stw r22, 80(sp)
+	stw r23, 84(sp)
+	stw r24, 88(sp)
+	stw fp, 92(sp)
+	ret
 
+PopAll:
+	ldw r2, 0(sp)
+	ldw r3, 4(sp)
+	ldw r4, 8(sp)
+	ldw r5, 12(sp)
+	ldw r6, 16(sp)
+	ldw r7, 20(sp)
+	ldw r8, 24(sp)
+	ldw r9, 28(sp)
+	ldw r10, 32(sp)
+	ldw r11, 36(sp)
+	ldw r12, 40(sp)
+	ldw r13, 44(sp)
+	ldw r14, 48(sp)
+	ldw r15, 52(sp)
+	ldw r16, 56(sp)
+	ldw r17, 60(sp)
+	ldw r18, 64(sp)
+	ldw r19, 68(sp)
+	ldw r20, 72(sp)
+	ldw r21, 76(sp)
+	ldw r22, 80(sp)
+	ldw r23, 84(sp)
+	ldw r24, 88(sp)
+	ldw fp, 92(sp)
+	addi sp, sp, 96
+	ret
 

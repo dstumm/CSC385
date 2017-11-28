@@ -13,6 +13,10 @@
 INPUT_STATE: 
 	.hword 0
 
+.align 1
+TICK_STATE:
+  .hword 0
+
 .global INPUT_STATE
 .global RIGHT_ARROW_KEY
 .global LEFT_ARROW_KEY
@@ -20,6 +24,7 @@ INPUT_STATE:
 .global ADDR_LEDS
 .global ADDR_TIMER
 .global ADDR_KEYBOARD
+.global TICK_STATE
 
 
 .text
@@ -31,6 +36,10 @@ INPUT_STATE:
 
 	# Initialize sp
 	#movia sp, 0x03FFFFFC
+
+  # Zero tick
+  movia r8, TICK_STATE
+  sth r0, 0(r8)
 
 	# Timer
 	movia r8, ADDR_TIMER
@@ -66,18 +75,34 @@ INPUT_STATE:
 	wrctl ctl0, r9
 
 	# "Restart" the game which will initialize
-	call RestartGame
-
 	addi sp, sp, -4
 	stw ra, 0(sp)
+	
+	call RestartGame
+
 	movia r4, 0x08000000
 	call drawing_init
 	ldw ra, 0(sp)
 	addi sp, sp, 4
 
 LOOP:
+
 	movia r8, INPUT_STATE
 	ldw r9, 0(r8)
 	movia r8, ADDR_LEDS
 	stwio r9, 0(r8)
+
+  # Game tick checker
+  movia r8, TICK_STATE
+  ldh r9, 0(r8)
+  beq r9, r0, LOOP
+  # Clear tick, call gameloop
+  sth r0, 0(r8)
+
+	addi sp, sp, -4
+	stw ra, 0(sp)
+  call GameLoop
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+
 	br LOOP

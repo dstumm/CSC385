@@ -3,17 +3,13 @@ November 20th, 2017
 - David: Initial drawing code in c
 
 November 21st, 2017
-- James: After troubles in the lab I got the keyboard code working in the
-simulator.
+- James: After troubles in the lab I got the keyboard code working in the simulator.
 
 November 25th, 2017
-- James: Player movement left/right works in simulator and is bounded to
-playing field. Player firing works, placeholder for enemy fire. Added collision between enemy bullets and player, and basic
-collision between enemy bullets and shield.
+- James: Player movement left/right works in simulator and is bounded to playing field. Player firing works, placeholder for enemy fire. Added collision between enemy bullets and player, and basic collision between enemy bullets and shield.
 
 November 26th, 2017
-- James: Added a recursive collision checker for the shields for pixel sized
-destruction.
+- James: Added a collision checker for the shields 
 - David: - draw a 'sprite' 
          - initialize invaders for level
          - draw invaders
