@@ -17,6 +17,7 @@ PLAYER_STATE:
 # Bullet represented as y/x position, i.e. 0xYYYYXXXXX value of 0 means dead
 PLAYER_BULLET:
   .word 0
+  .word 0x00040001
 
 .align 2
 # Enemy bullets array, max 10 bullets at a time (10x4byte ints as 0xYYYYXXXX)
@@ -69,6 +70,8 @@ TEST:
 # Restart the game
 #
 RestartGame:
+	addi sp, sp, -4
+	stw ra, 0(sp)
 	
 	# Initialize player
 	# Position height and width/2
@@ -97,8 +100,8 @@ ZERO_ENEMY_BULLET:
   bgt r10, r0, ZERO_ENEMY_BULLET
 
 	# Initialize the enemies
-	# movi r4, 0
-	#call init_invasion
+	movi r4, 0
+	call INIT_INVASION
 
 	# Initialize shields
   movi r8, -1
@@ -116,6 +119,9 @@ INIT_SHIELD:
   movi r9, 4
   blt r8, r9, INIT_SHIELD
 
+RESTART_DONE:
+	ldw ra, 0(sp)
+	addi sp, sp, 4
 	ret
 
 # 
@@ -124,42 +130,23 @@ INIT_SHIELD:
 GameLoop:
 	addi sp, sp, -4
 	stw ra, 0(sp)
-  #stw r8, 4(sp)
-  #stw r9, 8(sp)
-  #stw r10, 12(sp)
-  #stw r11, 16(sp)
-	#stw r16, 20(sp)
-	#stw r17, 24(sp)
-	#stw r18, 28(sp)
-	#stw r19, 32(sp)
-
-	call PushAll
+	#call PushAll
 
 	call drawing_clear_buffer
 
-	movia r4, TEST
-	movia r5, 0xffff
-	call drawing_fill_rect
+
+	call DRAW_INVASION
+	call MOVE_INVASION
+
+  	call UpdatePlayer
+    call UpdateBullets
+  #call CheckCollision
 
 	call drawing_swap_buffers
 
-	call PopAll
-
-  #call UpdatePlayer
-  #call UpdateBullets
-  #call CheckCollision
-
-  
+	#call PopAll
 	ldw ra, 0(sp)
 	addi sp, sp, 4
- 	#ldw r8, 4(sp)
- 	#ldw r9, 8(sp)
-  #ldw r10, 12(sp)
-  #ldw r11, 16(sp)
-	#ldw r16, 20(sp)
-	#ldw r17, 24(sp)
-	#ldw r18, 28(sp)
-	#ldw r19, 32(sp)
 	ret
 
 # 
@@ -174,6 +161,28 @@ UpdatePlayer:
 	ldw r8, 0(r9)
 	movia r9, INPUT_STATE
 	ldh r9, 0(r9)
+
+CHECK_FIRE:
+	# Check for pending fire
+	andi r10, r9, SPACE_KEY
+	beq r10, r0, CHECK_MOVEMENT
+
+	# Fire
+	addi sp, sp, -8	
+	stw r8, 0(sp)
+	sth r9, 4(sp)
+	call Fire	
+	ldw r8, 0(sp)
+	ldh r9, 4(sp)
+	addi sp, sp, 8
+
+	movia r10, SPACE_KEY
+	xori r10, r10, 0xF
+	and r9, r9, r10
+	movia r10, INPUT_STATE
+	sth r9, 0(r10)
+
+CHECK_MOVEMENT:
 
 	# Check if player should move left, move left or fire
 	andi r10, r9, LEFT_ARROW_KEY
@@ -216,11 +225,7 @@ PLAYER_DONE:
 	# Draw it
 	movia r4, PLAYER_STATE
 	movia r5, 0x2FD6
-	#call drawing_fill_rect
-
-	# Write player position to the leds
-	#movia r9, ADDR_LEDS
-	#stwio r8, 0(r9)
+	call drawing_fill_rect
 
 	ldw ra, 0(sp)
 	addi sp, sp, 4
@@ -238,11 +243,11 @@ Fire:
   # Create a new bullet at the players position + an offset
   # Get the players position with the y in the upper bits, x in the lower bits
   movia r9, PLAYER_STATE
-  ldw r8, 0(r9)
+  ldw r10, 0(r9)
 
   # Add an offset of half the players width (-y +x), and enough height to fire above the player (assume width 16 height 8)
   movia r9, 0xFFFC0008
-  add r8, r8, r9
+  add r8, r10, r9
 
   # Store the bullet
   movia r9, PLAYER_BULLET
@@ -300,6 +305,14 @@ PLAYER_B_APPLY:
   or r8, r8, r10
   stw r8, 0(r9)
 
+	addi sp, sp, -4
+	stw ra, 0(sp)
+	mov r4, r9
+	movia r5, 0x2FD6
+	call drawing_fill_rect
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+
 UP_ENEMY_BULLETS:
   # Now all the enemy bullets
   movia r9, ENEMY_BULLETS
@@ -323,6 +336,16 @@ ENEMY_B_APPLY:
   andi r8, r8, 0xFFFF
   or r8, r8, r10
   stw r8, 0(r9)
+
+	
+	addi sp, sp, -4
+	stw ra, 0(sp)
+	mov r4, r9
+	movia r5, 0x2FD6
+	call drawing_fill_rect
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+
 
 NEXT_B:
   addi r9, r9, 4

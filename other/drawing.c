@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 
 volatile unsigned int *BUFFER_REGISTER = (unsigned int *)0xFF203020;
 volatile unsigned int *BACK_BUFFER_REGISTER = (unsigned int *)0xFF203024;
@@ -90,10 +89,19 @@ int drawing_swap_buffers() {
  * Clear the back buffer.
  */
 int drawing_clear_buffer() {
-    volatile void *addr = (void *)buffer.base;
-	memset((void*)addr, 0, 0x3ffff);
-	return 0;
+    volatile short *addr = (short *)buffer.base;
+    unsigned int x, y, offset;
+
+    for (y = 0; y < buffer.y_resolution; y++) {
+        for (x = 0; x < buffer.x_resolution; x++) {
+            offset = (y << buffer.wib) + x;
+            *(addr + offset) = 0x0000;
+        }
+    }
+
+    return 0;
 }
+
 /**
  * Draw a single pixel to the back buffer.
  */
