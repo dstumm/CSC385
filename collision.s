@@ -221,7 +221,7 @@ CheckShield:
   mov r18, r7
 
   # Get the position of the bounds rect and add it to offset
-  movia r8, SHIELD_POSITIONS
+  movia r8, SHIELD_STATES
   add r9, r16, r8
   add r6, r6, r9
 
@@ -235,7 +235,7 @@ CheckShield:
 
 SHIELD_COL_SIMPLIFIED:
 	# Get the shield position
-	movia r8, SHIELD_POSITIONS
+	movia r8, SHIELD_STATES
 	add r8, r16, r8
 	add r8, r17, r8 # r9 has true shield position
 	

@@ -115,10 +115,10 @@ int drawing_draw_pixel(unsigned short x, unsigned short y, unsigned short color)
  * Truncates to fit the screen.
  */
 int drawing_fill_rect(rect_t *rect, unsigned short color) {
-	printf("x: %d\n", rect->x);
-	printf("y: %d\n", rect->y);
-	printf("width: %d\n", rect->width);
-	printf("height: %d\n", rect->height);
+	//printf("x: %d\n", rect->x);
+	//printf("y: %d\n", rect->y);
+	//printf("width: %d\n", rect->width);
+	//printf("height: %d\n", rect->height);
     // boundary check
     if (rect->x >= buffer.x_resolution || rect->y >= buffer.y_resolution) {
         return -1;
@@ -144,7 +144,7 @@ int drawing_fill_rect(rect_t *rect, unsigned short color) {
     addr += (y1 << buffer.wib);
     for (y = y1; y < y2; y++) {
         for (x = x1; x < x2; x++) {
-printf("addr: %x\n", addr + x);
+//printf("addr: %x\n", addr + x);
             *(addr + x) = color;
         }
         addr += (1 << buffer.wib);

@@ -1,5 +1,6 @@
 .text
 .global INIT_INVASION, DRAW_INVASION, MOVE_INVASION
+.global ALIEN_SPRITE_MEDIUM
 
 # Initialize all aliens and invasion state for the given level.
 # 
