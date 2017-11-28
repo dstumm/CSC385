@@ -14,3 +14,9 @@ collision between enemy bullets and shield.
 November 26th, 2017
 - James: Added a recursive collision checker for the shields for pixel sized
 destruction.
+- David: - draw a 'sprite' 
+         - initialize invaders for level
+         - draw invaders
+         - move invaders
+         - kill invader
+         - initial player bullet invader collision detection
