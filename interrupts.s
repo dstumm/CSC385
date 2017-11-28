@@ -93,7 +93,7 @@ EXIT_HANDLER:
 	# Restore registers
 	ldw ra, 0(sp)
 	addi sp, sp, 4
-  PopAll
+  	call PopAll
 
 	subi ea, ea, 4
 	eret

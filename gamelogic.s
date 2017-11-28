@@ -370,7 +370,7 @@ PLAYER_HIT_DONE:
   ret 
 
 PushAll:
-	addi sp, sp, -104
+	addi sp, sp, -96
 	stw r2, 0(sp)
 	stw r3, 4(sp)
 	stw r4, 8(sp)
@@ -394,9 +394,7 @@ PushAll:
 	stw r22, 80(sp)
 	stw r23, 84(sp)
 	stw r24, 88(sp)
-	stw r25, 92(sp)
-	stw r26, 96(sp)
-	stw fp, 100(sp)
+	stw fp, 92(sp)
 	ret
 
 PopAll:
@@ -423,9 +421,7 @@ PopAll:
 	ldw r22, 80(sp)
 	ldw r23, 84(sp)
 	ldw r24, 88(sp)
-	ldw r25, 92(sp)
-	ldw r26, 96(sp)
-	ldw fp, 100(sp)
-	addi sp, sp, 104
+	ldw fp, 92(sp)
+	addi sp, sp, 96
 	ret
 
