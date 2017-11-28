@@ -36,11 +36,7 @@ COLLISION_DONE:
 CheckEnemyBullets:
   # Get player position
   movia r16, PLAYER_STATE
-  ldw r16, 0(r16)
-  movia r17, 0x0000FFFF
-  and r16, r16, r17
-  movia r17, PLAYER_YPOS
-  or r16, r16, r17      # Player position in r16
+  ldw r16, 0(r16)       # Player position in r16
   
 CHECK_ENEMY_BULLETS:
   movi r17, 0           # Save bullet counter
