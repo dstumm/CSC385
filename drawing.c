@@ -123,6 +123,10 @@ int drawing_draw_pixel(unsigned short x, unsigned short y, unsigned short color)
  * Truncates to fit the screen.
  */
 int drawing_fill_rect(rect_t *rect, unsigned short color) {
+	printf("x: %d\n", rect->x);
+	printf("y: %d\n", rect->y);
+	printf("width: %d\n", rect->width);
+	printf("height: %d\n", rect->height);
     // boundary check
     if (rect->x >= buffer.x_resolution || rect->y >= buffer.y_resolution) {
         return -1;
@@ -148,6 +152,7 @@ int drawing_fill_rect(rect_t *rect, unsigned short color) {
     addr += (y1 << buffer.wib);
     for (y = y1; y < y2; y++) {
         for (x = x1; x < x2; x++) {
+printf("addr: %x\n", addr + x);
             *(addr + x) = color;
         }
         addr += (1 << buffer.wib);
@@ -189,33 +194,45 @@ int drawing_draw_hline(unsigned short x1, unsigned short x2, unsigned short y, u
  * Draw a bitmap to the back buffer.
  */
 int drawing_draw_bitmap(struct rect_t *rect, char *bitmap, unsigned short color) {
+
+	//printf("x: %d\n", rect->x);
+	//printf("y: %d\n", rect->y);
+	//printf("width: %d\n", rect->width);
+	//printf("height: %d\n", rect->height);
+
 	// boundary check
 	if (rect->x >= buffer.x_resolution || rect->y >= buffer.y_resolution) {
 		return -1;
 	}
 
-	unsigned short x_end = rect->x + rect->width,
-				   y_end = rect->y + rect->height;
+    volatile short *addr = (short *)buffer.base;
+	unsigned short x, y, y_offset,
+				   x1 = rect->x,
+				   y1 = rect->y,
+				   x2 = x1 + rect->width,
+				   y2 = y1 + rect->height;
+    
+    // clip x coordinates to the screen
+   	if (x2 >= buffer.x_resolution){
+		x2 = buffer.x_resolution - 1;
+    }
 
-	// clip to screen
-	if (x_end > buffer.x_resolution) {
-		x_end = buffer.x_resolution;
-	}
-
-	if (y_end > buffer.y_resolution) {
-		y_end = buffer.y_resolution;
-	}
-
-    volatile short *addr = (short *)buffer.base + (rect->y << buffer.wib);
-	for (unsigned short i = rect->y; i < y_end; i++) {
-		for (unsigned short j = rect->x; j < y_end; j++) {
+    // clip y coordinates to the screen
+    if (y2 >= buffer.y_resolution) {
+        y2 = buffer.y_resolution - 1;
+    }
+    
+    addr += (y1 << buffer.wib);
+    for (y = y1; y < y2; y++) {
+        for (x = x1; x < x2; x++) {
+//printf("addr: %x\n", addr + x);
 			if (*bitmap > 0) {
-				*(addr + j) = color;
+            	*(addr + x) = color;
 			}
 			bitmap++;
-			addr += (1 << buffer.wib);
-		}
-	}
+        }
+        addr += (1 << buffer.wib);
+    }
 
 	return 0;
 }
