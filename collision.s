@@ -17,10 +17,8 @@ CheckCollision:
 	stw ra, 24(sp)
 
   # Check player bullet against enemies, shields
-
-  
   # Check enemy bullets against player, shields
-  call CheckEnemyBullets
+  call CheckBullets
 
 COLLISION_DONE:
   ldw r16, 0(sp)
@@ -33,7 +31,7 @@ COLLISION_DONE:
   addi sp, sp, 28
   ret
 
-CheckEnemyBullets:
+CheckBullets:
   # Get player position
   movia r16, PLAYER_STATE
   ldw r16, 0(r16)       # Player position in r16
@@ -47,23 +45,69 @@ ENEMY_B_CHECK:
   ldw r18, 0(r8)        # Save reference to bullet
   beq r18, r0, CHECK_NEXT_B
 
-  # Valid bullet, check collision against player and shields
+  # Bullet is arg 1, arg 2 is player/enemy 0/1 call checker
+  mov r4, r18
+  movi r5, 1
+  call CheckBullet
+
+CHECK_NEXT_B:
+  addi r17, r17, 1
+  movi r8, 10
+  blt r17, r8, ENEMY_B_CHECK
+
+# Were done
+  ret
+
+CheckBullet:
+  addi sp, sp, -12
+  stw ra, 0(sp)
+  stw r16, 4(sp)
+  stw r17, 8(sp)
+
+  # Save bullet and check type
+  mov r16, r4
+  mov r17, r5
+
+  # Check collision against player and shields
+  bne r16, r0, PLAYER_BULLET
+
+ENEMY_BULLET:
   # Player first
-  mov r4, r18            # rectA.pos
+  mov r4, r16           # rectA.pos
   movia r5, BULLET_SIZE # rectA.size
-  mov r6, r16           # rectB.pos
+  movia r8, PLAYER_STATE
+  ldw r6, 0(r8)         # rectB.pos
   movia r7, PLAYER_SIZE # rectB.size
 
   call ABAB
 
   beq r2, r0, CHECK_SHIELD:
-  # Bullet collision, zero it out, apply to player
-  stw r0, 0(r18)
+  # Bullet collision to player, zero it out, apply to player
+  stw r0, 0(r16)
   call PlayerHit
-  br CHECK_NEXT_B
+  br CHECK_DONE
+
+PLAYER_BULLET:
+
+  # TODO: Loop through all enemies
+  mov r4, r16           # rectA.pos
+  movia r5, BULLET_SIZE # rectA.size
+  movia r8, PLAYER_STATE
+  ldw r6, 0(r8)         # rectB.pos
+  movia r7, PLAYER_SIZE # rectB.size
+
+  #call ABAB
+
+  beq r2, r0, CHECK_SHIELD:
+
+  # Bullet collision to enemy, zero it out
+  stw r0, 0(r16)
+  #mov r4, rEnemy
+  #call EnemyHit
+  br CHECK_DONE
+
 
 CHECK_SHIELD:
-  # I could loop.. or i could not
   movi r19, 0           # Save shield counter
 S_CHECK:
   # First 2 params are bullet
@@ -91,14 +135,12 @@ CHECK_NEXT_S:
   movi r8, 4
   blt r19, r8, S_CHECK
 
-CHECK_NEXT_B:
-  addi r17, r17, 1
-  movi r8, 10
-  blt r17, r8, ENEMY_B_CHECK
-
-# Were done
+CHECK_DONE:
+  ldw ra, 0(sp)
+  ldw r16, 4(sp)
+  ldw r17, 8(sp)
+  addi sp, sp, 12
   ret
-
 # 
 # ABAB test, given rect A rect B, return if they overlay
 # Rect as 2 words postition:0xYYYYXXXX, size:0xHHHHWWWW

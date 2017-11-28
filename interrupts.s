@@ -1,14 +1,9 @@
 .section .exceptions, "ax"
 ISR:
-	# Save every register used 
-	addi sp, sp, -28
-	stw r4, 0(sp)
-	stw r8, 4(sp)
-	stw r9, 8(sp)
-	stw r10, 12(sp)
-	stw r16, 16(sp)
-	stw r17, 20(sp)
-	stw ra, 24(sp)
+	# Save registers
+	addi sp, sp, -4
+	stw ra, 0(sp)
+  call PushAll
 
 	# Check pending register
 	rdctl et, ctl4
@@ -95,15 +90,10 @@ NEXT_CODE:
 	br NOT_VALID
 
 EXIT_HANDLER:
-	# Restore them
-	ldw r4, 0(sp)
-	ldw r8, 4(sp)
-	ldw r9, 8(sp)
-	ldw r10, 12(sp)
-	ldw r16, 16(sp)
-	ldw r17, 20(sp)
-	ldw ra, 24(sp)
-	addi sp, sp, 28
+	# Restore registers
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+  PopAll
 
 	subi ea, ea, 4
 	eret
@@ -244,4 +234,3 @@ KEY_RESTART:
 
 DONE:
 	ret
-
