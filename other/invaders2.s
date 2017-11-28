@@ -1,6 +1,5 @@
 .text
 .global INIT_INVASION, DRAW_INVASION, MOVE_INVASION
-.global ALIEN_SPRITE_MEDIUM
 
 # Initialize all aliens and invasion state for the given level.
 # 
@@ -110,9 +109,9 @@ DRAW_INVASION:
 
         addi r16, r16, 1                            # next row
 
-        movi r4, GRID_HEIGHT                        # decrease y position
+        movi r4, GRID_HEIGHT                        # increase y position
         slli r4, r4, 16
-        sub r21, r21, r4
+        add r21, r21, r4
 
         movi r4, ALIEN_ROWS
         blt r16, r4, DRAW_ALIEN_ROW                 # rows done?
@@ -233,7 +232,7 @@ KILL_ALIEN:
 
     movi r5, ALIEN_COLS                             # get row index
     div r4, r4, r5                                  
-    srli r4, r4, 1                                  # get offset into points table
+    srli r4, r4, 1                                      # get offset into points table
     slli r4, r4, 2
 
     movia r5, ALIEN_POINTS_TABLE                    # get points
@@ -293,15 +292,15 @@ ALIENS: .skip 55
 # If they get past level 9, just repeat the same starting position
 # and they'll play forever
 ALIEN_START_TABLE:
-    .byte 0x78
-    .byte 0x90
-    .byte 0xA0
-    .byte 0xA8
-    .byte 0xA8
-    .byte 0xA8
-    .byte 0xB0
-    .byte 0xB0
-    .byte 0xB0
+    .byte 78
+    .byte 60
+    .byte 50
+    .byte 48
+    .byte 48
+    .byte 48
+    .byte 40
+    .byte 40
+    .byte 40
 
 # The following are tables of an alien row index to points/color/sprites.
 #
