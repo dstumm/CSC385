@@ -16,3 +16,7 @@ November 26th, 2017
          - move invaders
          - kill invader
          - initial player bullet invader collision detection
+
+November 28th, 2017
+- James: Set player sprite to draw, did a pass on
+collision, should work with all bullets colliding with player and shields

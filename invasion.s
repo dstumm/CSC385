@@ -218,6 +218,16 @@ MOVE_INVASION:
 ALIEN_BULLET_COLLISION:
     ret
 
+# Get the position of an alien at the given index
+#
+# r4: alien index
+#
+# Returns a word with the aliens position formatted 0xYYYYXXXXX
+#
+# r2: position
+GET_ALIEN_POSITION:
+  ret
+
 # Kills the alien at the given index.
 #
 # r4: alien index

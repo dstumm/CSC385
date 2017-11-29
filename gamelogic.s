@@ -5,15 +5,30 @@
 
 .equ SCREEN_HEIGHT, 240
 .equ SCREEN_WIDTH, 320
+.equ LEFT_BOUND, 51
+.equ RIGHT_BOUND, 269
 
-.global FireEnemy, SHIELDS, SHIELD_STATES
+.equ GREEN, 0x27E4 
+
 
 .align 2
 # Player state has first and second as x position, third byte as life, fourth byte as score, 
 PLAYER_STATE: 
 	.word 0 # position
-	.word 0x00080010 # size
+	.word 0x00070010 # size 16x7
 	.word 0
+
+.align 2
+# Position and rects of the lives images to display
+LIVES_UI:
+  .word(0x00E8004B)
+  .word(0x00070010)
+
+  .word(0x00E8005B)
+  .word(0x00070010)
+
+  .word(0x00E8006B)
+  .word(0x00070010)
 
 .align 2
 # Bullet represented as y/x position, i.e. 0xYYYYXXXXX value of 0 means dead
@@ -27,51 +42,94 @@ ENEMY_BULLETS:
   .space(80)
 
 .align 2
-SHIELDS:
-	.space(16)
+SHIELDS_STATES:
+	.space(1408)
 
-# Shield is represented as an int, each byte of the int is a row of pixels
-# ex 0x3CFFFFFF = 
-# 0011 1100
-# 1111 1111
-# 1111 1111
-# 1111 1111
+# Sprites
+SHIELD_SPRITE:
+  .byte 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0
+  .byte 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0
+  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0
+  .byte 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1
+  .byte 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1
+
+PLAYER_SPRITE:
+  .byte 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0
+  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
+  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
+  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
 
 .align 2
-SHIELD_STATES:
-  .word(0x00c80000)
-  .word(0x00040008)
-  .word(0x00c80050)
-  .word(0x00040008)
-  .word(0x00c800A0)
-  .word(0x00040008)
-  .word(0x00c800F0)
-  .word(0x00040008)
+SHIELDS: # Positions and the rect (22x16)
+  .word(0x00b80051)
+  .word(0x00100016)
+  .word(0x00b8007E)
+  .word(0x00100016)
+  .word(0x00b800AB)
+  .word(0x00100016)
+  .word(0x00b800D8)
+  .word(0x00100016)
 
 .align
 TICK:
 	.word(0x00000000)
 
-.align 2
-TEST:
-	.word(0x000f0000)
-	.word(0x00080008)
-
+.global LEFT_BOUND, RIGHT_BOUND
 .global PLAYER_STATE
 .global PLAYER_BULLET
 .global ENEMY_BULLETS
-.global SHIELD_POSITIONS
-.global SHIELDS
+.global SHIELDS, SHIELDS_STATES, SHIELD_SPRITE
 .global PushAll
 .global PopAll
 .global TICK
+.global GREEN
 
 .global RestartGame
 .global GameLoop
-.global Fire
-.global PlayerHit
 
 .text
+
+# 
+# Game logic here
+#
+GameLoop:
+	addi sp, sp, -4
+	stw ra, 0(sp)
+	call PushAll
+
+	call drawing_clear_buffer
+
+
+	#call DRAW_INVASION
+	#call MOVE_INVASION
+
+  call UpdatePlayer
+  call UpdateBullets
+	call UpdateShields
+  #call CheckCollision
+  call DrawLives
+
+	call drawing_swap_buffers
+
+	call PopAll
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+
 #
 # Restart the game
 #
@@ -81,7 +139,7 @@ RestartGame:
 	
 	# Initialize player
 	# Position height and width/2
-	movia r8, 0x00c000A0
+	movia r8, 0x00d00098
 	movia r9, PLAYER_STATE
 	stw r8, 0(r9)
 	# Score 0, life 3
@@ -107,22 +165,44 @@ ZERO_ENEMY_BULLET:
   addi r9, r9, 8
   bgt r10, r0, ZERO_ENEMY_BULLET
 
-	# Initialize the enemies
+  # 
+  # Initialize the enemies
+  #
 	movi r4, 0
 	call INIT_INVASION
 
+  #
 	# Initialize shields
+  #
   movi r8, 0
 INIT_SHIELD:
 
-  # Get shield in array SHIELD[i*4] and set initial value
-  movia r9, SHIELDS
-  slli r10, r8, 2
+  # Get shield in array SHIELD_STATES[i*352] and set initial value
+  movia r9, SHIELD_STATES
+  movi r10, 352
+  mul r10, r8, r10 
   add r9, r9, r10
-  movia r10, 0x3CFFFFFF
-  stw r10, 0(r9)
+  # r9 is 352 aligned address into SHIELD_STATES
 
-  # Loop while i < 4
+  # Need to load 88 words from the shield sprite
+  movi r11, 0
+  movia r12, SHIELD_SPRITE
+SHIELD_WORD:
+  slli r13, r11, 2
+  add r14, r13, r12
+  ldw r14, 0(r14)
+  # r14 has word from sprite
+
+  # Get offset into shield itself
+  add r13, r13, r9
+  stw r15, 0(r13)
+
+  # Loop 88 times
+  movi r13, 88
+  addi r11, r11, 1
+  blt r11, r13 SHIELD_WORD
+
+  # Loop for 4 shields
   movi r9, 4
   addi r8, r8, 1
   blt r8, r9, INIT_SHIELD
@@ -132,200 +212,6 @@ RESTART_DONE:
 	addi sp, sp, 4
 	ret
 
-# 
-# Game logic here
-#
-GameLoop:
-	addi sp, sp, -4
-	stw ra, 0(sp)
-	call PushAll
-
-	call drawing_clear_buffer
-
-
-	#call DRAW_INVASION
-	#call MOVE_INVASION
-
-  	call UpdatePlayer
-    call UpdateBullets
-	call UpdateShields
-  #call CheckCollision
-
-	call drawing_swap_buffers
-
-	call PopAll
-	ldw ra, 0(sp)
-	addi sp, sp, 4
-	ret
-
-# 
-# Playerlogic
-#
-UpdatePlayer: 
-	addi sp, sp, -4
-	stw ra, 0(sp)
-
-	# Get current player state and input state
-	movia r9, PLAYER_STATE
-	ldw r8, 0(r9)
-	movia r9, INPUT_STATE
-	ldh r9, 0(r9)
-
-CHECK_FIRE:
-	# Check for pending fire
-	andi r10, r9, SPACE_KEY
-	beq r10, r0, CHECK_MOVEMENT
-
-	# Fire
-	addi sp, sp, -8	
-	stw r8, 0(sp)
-	sth r9, 4(sp)
-	call Fire	
-	movia r4, 0x00100010
-	call FireEnemy
-	ldw r8, 0(sp)
-	ldh r9, 4(sp)
-	addi sp, sp, 8
-
-	movia r10, SPACE_KEY
-	xori r10, r10, 0xF
-	and r9, r9, r10
-	movia r10, INPUT_STATE
-	sth r9, 0(r10)
-
-CHECK_MOVEMENT:
-
-	# Check if player should move left, move left or fire
-	andi r10, r9, LEFT_ARROW_KEY
-	bne r10, r0, MOVE_LEFT
-	andi r10, r9, RIGHT_ARROW_KEY
-	bne r10, r0, MOVE_RIGHT
-	br PLAYER_DONE
-
-MOVE_LEFT:
-	# Calculate new position
-	andi r9, r8, 0xFFFF
-	subi r9, r9, SPEED_PLAYER
-	bgt r9, r0, MOVE_APPLY
-	# If its over bounds, just set it to the bound
-	mov r9, r0
-	br MOVE_APPLY
-
-MOVE_RIGHT:
-	# Calculate new position
-	andi r9, r8, 0xFFFF
-	addi r9, r9, SPEED_PLAYER
-	movi r10, 0x130 # 320 - playerwidth (16)
-	blt r9, r10, MOVE_APPLY
-	# If its over bounds, just set it to the bound
-	mov r9, r10
-	br MOVE_APPLY
-    
-MOVE_APPLY:
-  movia r10, 0xFFFF0000
-  and r8, r8, r10
-	andi r9, r9, 0xFFFF
-	or r8, r8, r9
-	br PLAYER_DONE
-
-PLAYER_DONE:
-	# Apply new player state
-	movia r9, PLAYER_STATE
-	stw r8, 0(r9)
-
-	# Draw it
-	movia r4, PLAYER_STATE
-	movia r5, ALIEN_SPRITE_MEDIUM
-	movia r6, 0x2FD6
-	call drawing_draw_bitmap
-
-	ldw ra, 0(sp)
-	addi sp, sp, 4
-	ret
-
-# 
-# Update all bullets
-#
-UpdateBullets:
-  # First just the player bullet
-  movia r9, PLAYER_BULLET
-  ldw r8, 0(r9)
-  beq r8, r0, UP_ENEMY_BULLETS
-
-  # Move the bullet up 1
-  srli r10, r8, 16
-  subi r10, r10, SPEED_PLAYER_BULLET
-  
-  # If its above the screen bounds zero it out
-  bgt r10, r0, PLAYER_B_APPLY
-  mov r8, r0
-  stw r8, 0(r9)
-  br UP_ENEMY_BULLETS
- 
-PLAYER_B_APPLY:
-  slli r10, r10, 16
-  andi r8, r8, 0xFFFF
-  or r8, r8, r10
-  stw r8, 0(r9)
-
-	addi sp, sp, -4
-	stw ra, 0(sp)
-	mov r4, r9
-	movia r5, 0x2FD6
-	call drawing_fill_rect
-	ldw ra, 0(sp)
-	addi sp, sp, 4
-
-UP_ENEMY_BULLETS:
-  # Now all the enemy bullets
-  movia r9, ENEMY_BULLETS
-  movi r12, 10
-ENEMY_B_MOVE:
-  ldw r8, 0(r9)
-  beq r8, r0, NEXT_B
-
-  # Valid bullet, move it
-  srli r10, r8, 16
-  addi r10, r10, SPEED_ENEMY_BULLET
-  #If its blow the screen bounds zero it out
-  movi r11, SCREEN_HEIGHT
-  blt r10, r11, ENEMY_B_APPLY
-  mov r8, r0
-  stw r8, 0(r9)
-  br NEXT_B
- 
-ENEMY_B_APPLY:
-  slli r10, r10, 16
-  andi r8, r8, 0xFFFF
-  or r8, r8, r10
-  stw r8, 0(r9)
-
-	
-	addi sp, sp, -12
-	stw ra, 0(sp)
-	stw r9, 4(sp)
-	stw r12, 8(sp)
-	mov r4, r9
-	movia r5, 0x2FD6
-	call drawing_fill_rect
-	ldw ra, 0(sp)
-	ldw r9, 4(sp)
-	ldw r12, 8(sp)
-	addi sp, sp, 12
-
-
-NEXT_B:
-  addi r9, r9, 8
-  addi r12, r12, -1
-  bgt r12, r0, ENEMY_B_MOVE
-  br BULLET_DONE
-
-BULLET_DONE:
-  # Debug
-  #movia r9, ADDR_LEDS
-  #srli r8, r8, 16
-  #stwio r8, 0(r9)
-  ret
 
 #
 # Update Shields
@@ -338,20 +224,20 @@ UpdateShields:
 	movi r16, 0
 UPDATE_SHIELD:
 	# Position and size
-	movia r8, SHIELD_STATES
+	movia r8, SHIELDS
 	slli r9, r16, 3
 	add r8, r8, r9
-	mov r4, r8
+	mov r4, r8 # r4 is 8 aligned address into SHIELDS
 
 	# Sprite
-	movia r8, SHIELDS
-	slli r9, r16, 2
-	add r8, r8, r9
-	mov r5, r8
+	movia r8, SHIELD_STATES
+  movi r9, 352
+  mul r9, r9, r16
+	add r8, r8, r9 
+	mov r5, r8 # r5 is 352 aligned address into SHIELD_STATES
 
 	# Draw it
-	movia r6, 0x2FD6
-	#movia r5, 0x2FD6
+	movia r6, GREEN
 	call drawing_draw_bitmap
 
 	addi r16, r16, 1
@@ -363,86 +249,42 @@ UPDATE_SHIELDS_DONE:
 	ldw r16, 4(sp)
 	addi sp, sp, 8
 	ret
+
 # 
-# Fire player bullets
+# Draw Lives
 #
-Fire:
-  # Only create a bullet when one doesn't already exist (i.e. PLAYER_BULLET == 0)
-  movia r9, PLAYER_BULLET
-  ldw r8, 0(r9)
-  bne r8, r0, FIRE_DONE
+DrawLives:
+  addi sp, sp, -12
+  stw ra, 0(sp)
+  stw r16, 4(sp)
+  stw r17, 8(sp)
 
-  # Create a new bullet at the players position + an offset
-  # Get the players position with the y in the upper bits, x in the lower bits
-  movia r9, PLAYER_STATE
-  ldw r10, 0(r9)
+  # Load player lives
+  movia r8, PLAYER_STATE
+  ldw r8, 8(r8)
+  srli r17, r8, 16
 
-  # Add an offset of half the players width (-y +x), and enough height to fire above the player (assume width 16 height 8)
-  movia r9, 0xFFFC0008
-  add r8, r10, r9
+  // Loop
+  movi r16, 0
+DRAW_LIFE:
+  bge r16, r17, DRAW_LIVES_DONE
 
-  # Store the bullet
-  movia r9, PLAYER_BULLET
-  stw r8, 0(r9)
+  movia r4, LIVES_UI
+  slli r8, r16, 2
+  add r4, r4, r8
+  movia r5, PLAYER_SPRITE
+  movia r6, GREEN
+  call drawing_draw_bitmap
 
-FIRE_DONE:
-	ret
+  addi r16, r16, 1
+  br DRAW_LIFE
 
-#
-# Fire enemy bullet
-# @param r4 word, x/y position of bullet to create
-FireEnemy:
-  # First we need to see if there is a free bullet struct
-  movia r9, ENEMY_BULLETS
-  movi r10, 10
-GET_BULLET:
-  ldw r8, 0(r9)
-  beq r8, r0, INIT_BULLET
-
-  addi r9, r9, 8
-  addi r10, r10, -1
-  bgt r10, r0, GET_BULLET
-  br FIRE_ENEMY_DONE
-
-INIT_BULLET:
-  # Set bullet to the input position
-  stw r4, 0(r9)
-
-FIRE_ENEMY_DONE:
+DRAW_LIVES_DONE:
+  ldw ra, 0(sp)
+  ldw r16, 4(sp)
+  ldw r17, 8(sp)
+  addi sp, sp, 12
   ret
-
-
-
-# 
-# Handle player hit by bullet
-PlayerHit:
-	addi sp, sp, -4
-	stw ra, 0(sp)
-
-  movia r9, PLAYER_STATE
-  ldw r8, 8(r9)
-  srli r10, r8, 16 # r10 has life now
-
-  addi r10, r10, -1
-
-  bgt r10, r0, PLAYER_LOSE_LIFE
-  # No more life
-  call RestartGame
-	br PLAYER_HIT_DONE
-
-PLAYER_LOSE_LIFE:
-	# Apply the loss of life
-	slli r10, r10, 16
-	movia r11, 0x0000FFFF
-	and r8, r8, r11
-	or r8, r8, r10
-	stw r8, 8(r9)
-	br PLAYER_HIT_DONE
-
-PLAYER_HIT_DONE:
-	ldw ra, 0(sp)
-	addi sp, sp, 4
-  ret 
 
 PushAll:
 	addi sp, sp, -96
