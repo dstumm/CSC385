@@ -206,7 +206,7 @@ MOVE_INVASION:
         movia r6, INVASION_POSITION
         ldh r7, 2(r6)                               # current y position
         movi r8, ALIEN_DROP_DISTANCE
-        sub r7, r7, r8
+        add r7, r7, r8
         sth r7, 2(r6)
 
         movia r6, INVASION_DIRECTION_MASK           # toggle direction
