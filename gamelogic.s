@@ -92,7 +92,7 @@ TICK:
 .global PLAYER_STATE
 .global PLAYER_BULLET
 .global ENEMY_BULLETS
-.global SHIELDS, SHIELDS_STATES, SHIELD_SPRITE
+.global SHIELDS, SHIELD_STATES, SHIELD_SPRITE
 .global PushAll
 .global PopAll
 .global TICK
@@ -117,11 +117,11 @@ GameLoop:
 	#call DRAW_INVASION
 	#call MOVE_INVASION
 
-  call UpdatePlayer
-  call UpdateBullets
+  	call UpdatePlayer
+  	call UpdateBullets
 	call UpdateShields
-  #call CheckCollision
-  call DrawLives
+  	#call CheckCollision
+  	#call DrawLives
 
 	call drawing_swap_buffers
 
@@ -200,7 +200,7 @@ SHIELD_WORD:
   # Loop 88 times
   movi r13, 88
   addi r11, r11, 1
-  blt r11, r13 SHIELD_WORD
+  blt r11, r13, SHIELD_WORD
 
   # Loop for 4 shields
   movi r9, 4
@@ -264,7 +264,7 @@ DrawLives:
   ldw r8, 8(r8)
   srli r17, r8, 16
 
-  // Loop
+  # Loop
   movi r16, 0
 DRAW_LIFE:
   bge r16, r17, DRAW_LIVES_DONE

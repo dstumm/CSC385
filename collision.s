@@ -32,12 +32,12 @@ CHECK_NEXT_B:
   addi r16, r16, 1
   movi r8, 10
   blt r16, r8, ENEMY_B_CHECK
-  br CHECK_BS_DONE
+  br COLLISION_DONE
 
 CHECK_PLAYER_BULLET:
   movia r8, PLAYER_BULLET
   ldw r9, 0(r8)
-  beq r9 r0, CHECK_BS_DONE 
+  beq r9, r0, COLLISION_DONE 
 
   # Bullet is arg 1, arg 2 is 0 for player
   mov r4, r9
@@ -72,7 +72,7 @@ CheckBullet:
 ENEMY_BULLET:
   # Player first
   mov r4, r16           # Bullet struct
-  mov r5, PLAYER_STATE
+  movia r5, PLAYER_STATE
 
   call ABAB
 
@@ -92,8 +92,8 @@ PLAYER_BULLET:
 
 CHECK_ENEMY:
 
-  mov r8, ALIENS
-  add r8, r18           # r8 has index into Aliens, we need to calculate the position
+  movia r8, ALIENS
+  add r8, r8, r18           # r8 has index into Aliens, we need to calculate the position
   ldb r8, 0(r8)
   andi r8, r8, 0x1      # r8 is this aliens state
   movi r9, 2
@@ -113,7 +113,7 @@ CHECK_ENEMY:
   # Bullet collision to enemy, zero it out
   stw r0, 0(r16)
   mov r4, r18
-  KILL_ALIEN
+  call KILL_ALIEN
   # r2 has pointers, r3 has remaining alive aliens
 
 CHECK_NEXT_ENEMY:
@@ -125,7 +125,7 @@ CHECK_NEXT_ENEMY:
 #
 # Check all bullets against shield
 #
-ALL_BULLETS
+ALL_BULLETS:
   movi r18, 0           # Save shield counter
 CHECK_SHIELD:
   
@@ -137,7 +137,7 @@ CHECK_SHIELD:
 
   movi r9, 352
   mul r8, r18, r9
-  movai r6, SHIELD_STATES
+  movia r6, SHIELD_STATES
   add r6, r6, r8        # Sprite pointer
   mov r7, r17           # Player/enemy bullet
 
@@ -241,7 +241,7 @@ GET_BIT:
   # Return whethers theres a collision or not
   beq r10, r0, NEXT_BIT
 
-SHIELD_COL:
+SHIELD_BIT_COL:
   # If theres a collision flip the bit off, return a 1
   # Pass the bitmap and offset in to the bitmap
   mov r4, r18
@@ -288,7 +288,7 @@ ShieldHit:
 # @param r4, struct A, position/size
 # @param r5, struct A, position/size
 # @return r2 1 if overlap, 0 if not
-ABAB
+ABAB:
   addi sp, sp, -4
   stw ra, 0(sp)
 
