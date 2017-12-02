@@ -10,85 +10,97 @@ ALIEN_DUMMY:
 CheckCollision:
     addi sp, sp, -8 
     stw ra, 0(sp)
-stw r16, 4(sp)
+    stw r16, 4(sp)
 
-# The only collision really is with bullets
+    # The only collision really is with bullets
 
-    COL_ENEMY_BULLETS:
+COL_ENEMY_BULLETS:
     movi r16, 0           # Save bullet counter
-    ENEMY_B_COL:
+ENEMY_B_COL:
     movia r8, ENEMY_BULLETS
     slli r9, r16, 3       # Multiply counter by 8
     add r8, r8, r9
     ldw r9, 0(r8)        # Save reference to bullet
     beq r9, r0, COL_NEXT_B
 
-# Bullet is arg 1, arg 2 is player/enemy 0/1 call checker
+    # Bullet is arg 1, arg 2 is player/enemy 0/1 call checker
     mov r4, r8
     movi r5, 1
     call CheckBullet
 
-    COL_NEXT_B:
+COL_NEXT_B:
     addi r16, r16, 1
     movi r8, 10
     blt r16, r8, ENEMY_B_COL
     br COL_PLAYER_BULLET
 
-    COL_PLAYER_BULLET:
+COL_PLAYER_BULLET:
     movia r8, PLAYER_BULLET
-ldw r9, 0(r8)
+    ldw r9, 0(r8)
     beq r9, r0, COLLISION_DONE 
 
-# Bullet is arg 1, arg 2 is 0 for player
+    # Bullet is arg 1, arg 2 is 0 for player
     mov r4, r8
     movi r5, 0
     call CheckBullet
 
-    COLLISION_DONE:
+COLLISION_DONE:
     ldw ra, 0(sp)
-ldw r16, 4(sp)
+    ldw r16, 4(sp)
     addi sp, sp, 8
     ret
 
 # 
 # Check the individual bullet
 #
-    CheckBullet:
+CheckBullet:
     addi sp, sp, -16
     stw ra, 0(sp)
     stw r16, 4(sp)
     stw r17, 8(sp)
-stw r18, 12(sp)
+    stw r18, 12(sp)
 
-# Save bullet and check type
+    # Save bullet and check type
     mov r16, r4
     mov r17, r5
 
-# Check collision against player and shields
+    # Check collision against player and shields
     beq r17, r0, CHECK_PLAYER_BULLET
 
-# 
-# Check all enemy bullets against player
-    CHECK_ENEMY_BULLET:
-# Player first
+    # 
+    # Check all enemy bullets against player and player bullet
+CHECK_ENEMY_BULLET:
+AGAINST_PLAYER:
+    # Player first
     mov r4, r16           # Bullet struct
     movia r5, PLAYER_STATE
-
     call ABAB
+    beq r2, r0, AGAINST_PLAYER_BULLET
 
-    beq r2, r0, ALL_BULLETS:
-
-# Bullet collision to player, zero it out, apply to player
-stw r0, 0(r16)
-# TODO: call pixel wise collision checker
+    # Bullet collision to player, zero it out, apply to player
+    stw r0, 0(r16)
+    # TODO: call pixel wise collision checker
     call PlayerHit
+    br CHECK_DONE
+
+    # Player bullet
+AGAINST_PLAYER_BULLET:
+    mov r4, r16
+    movia r5, PLAYER_BULLET
+    call ABAB
+    beq r2, r0, ALL_BULLETS
+
+    # Bullet to bullet collision, zero them both out
+    stw r0, 0(r16)
+    movia r8, PLAYER_BULLET
+    stwo, r0, 0(r8)
     br CHECK_DONE
 
 # 
 # Check player bullet against all enemies
 #
-    CHECK_PLAYER_BULLET:
-# Index into invasion
+CHECK_PLAYER_BULLET:
+    # Index into invasion
     movi r18, 0
 
     CHECK_ENEMY:
