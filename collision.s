@@ -225,6 +225,7 @@ BIT_PLAYER:
 GET_BIT:
   # Get the address of the row by multiplying the y offset by 22
   srli r11, r10, 16
+  # THIS WAS A GARBAGE ONE OFF ERROR THAT TOOK HOURS TO FIX ARRGGGG
   subi r11, r11, 1
   movi r12, 22
   mul r11, r11, r12 
