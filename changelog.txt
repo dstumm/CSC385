@@ -25,3 +25,6 @@ December 1st, 2017
 - James: Got pixel destruction on shields working, added UI with player life
 loss/restart on no lives. Wrote bomb algorithm for shield destruction but not
 tested.
+
+December 2nd, 2017
+- James: Wrote player explosion animation w/ respawn time

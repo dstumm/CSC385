@@ -74,6 +74,25 @@ PLAYER_SPRITE:
   .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
   .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
 
+PLAYER_SPRITE_RESPAWN:
+  .byte 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0
+  .byte 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0
+  .byte 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0
+  .byte 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0
+  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1
+
+  .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  .byte 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0
+  .byte 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0
+  .byte 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0
+  .byte 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0
+  .byte 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0
+  .byte 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1
+  .byte 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
+
 .align 2
 SHIELDS: # Positions and the rect (22x16)
   .word(0x00b80051)
@@ -90,7 +109,7 @@ TICK:
 	.word(0x00000000)
 
 .global LEFT_BOUND, RIGHT_BOUND
-.global PLAYER_STATE, PLAYER_SPRITE
+.global PLAYER_STATE, PLAYER_SPRITE, PLAYER_SPRITE_RESPAWN
 .global PLAYER_BULLET, ENEMY_BULLETS
 .global SHIELDS, SHIELD_STATES, SHIELD_SPRITE
 .global SPEED_PLAYER, SPEED_PLAYER_BULLET, SPEED_ENEMY_BULLET
