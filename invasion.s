@@ -1,6 +1,6 @@
 .text
 .global INIT_INVASION, DRAW_INVASION, MOVE_INVASION, KILL_ALIEN
-.global ALIEN_SPRITE_MEDIUM, ALIENS
+.global ALIEN_SPRITE_MEDIUM, ALIENS, GET_ALIEN_POSITION
 
 # Initialize all aliens and invasion state for the given level.
 # 
@@ -226,6 +226,7 @@ ALIEN_BULLET_COLLISION:
 #
 # r2: position
 GET_ALIEN_POSITION:
+	movia r2, 0x0
   ret
 
 # Kills the alien at the given index.

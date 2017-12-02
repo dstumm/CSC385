@@ -24,8 +24,8 @@ CHECK_FIRE:
 	stw r8, 0(sp)
 	sth r9, 4(sp)
 	call Fire	
-	movia r4, 0x00100010
-	call FireEnemy
+	#movia r4, 0x001000A0
+	#call FireEnemy
 	ldw r8, 0(sp)
 	ldh r9, 4(sp)
 	addi sp, sp, 8
@@ -48,7 +48,8 @@ CHECK_MOVEMENT:
 MOVE_LEFT:
 	# Calculate new position
 	andi r9, r8, 0xFFFF
-	subi r9, r9, SPEED_PLAYER
+	movia r11, SPEED_PLAYER
+	sub r9, r9, r11
   movi r10, LEFT_BOUND
 	bgt r9, r10, MOVE_APPLY
 	# If its over bounds, just set it to the bound
@@ -80,7 +81,7 @@ PLAYER_DONE:
 
 	# Draw it
 	movia r4, PLAYER_STATE
-	movia r5, ALIEN_SPRITE_MEDIUM
+	movia r5, PLAYER_SPRITE
 	movia r6, GREEN
 	call drawing_draw_bitmap
 

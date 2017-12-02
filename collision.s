@@ -8,39 +8,39 @@ ALIEN_DUMMY:
 .text
 .global CheckCollision
 CheckCollision:
-  addi sp, sp, -4 
+  addi sp, sp, -8 
 	stw ra, 0(sp)
   stw r16, 4(sp)
 
   # The only collision really is with bullets
 
-CHECK_ENEMY_BULLETS:
+COL_ENEMY_BULLETS:
   movi r16, 0           # Save bullet counter
-ENEMY_B_CHECK:
+ENEMY_B_COL:
   movia r8, ENEMY_BULLETS
   slli r9, r16, 3       # Multiply counter by 8
   add r8, r8, r9
   ldw r9, 0(r8)        # Save reference to bullet
-  beq r9, r0, CHECK_NEXT_B
+  beq r9, r0, COL_NEXT_B
 
   # Bullet is arg 1, arg 2 is player/enemy 0/1 call checker
-  mov r4, r9
+  mov r4, r8
   movi r5, 1
   call CheckBullet
 
-CHECK_NEXT_B:
+COL_NEXT_B:
   addi r16, r16, 1
   movi r8, 10
-  blt r16, r8, ENEMY_B_CHECK
-  br COLLISION_DONE
+  blt r16, r8, ENEMY_B_COL
+  br COL_PLAYER_BULLET
 
-CHECK_PLAYER_BULLET:
+COL_PLAYER_BULLET:
   movia r8, PLAYER_BULLET
   ldw r9, 0(r8)
   beq r9, r0, COLLISION_DONE 
 
   # Bullet is arg 1, arg 2 is 0 for player
-  mov r4, r9
+  mov r4, r8
   movi r5, 0
   call CheckBullet
 
@@ -65,11 +65,11 @@ CheckBullet:
   mov r17, r5
 
   # Check collision against player and shields
-  beq r17, r0, PLAYER_BULLET
+  beq r17, r0, CHECK_PLAYER_BULLET
 
 # 
 # Check all enemy bullets against player
-ENEMY_BULLET:
+CHECK_ENEMY_BULLET:
   # Player first
   mov r4, r16           # Bullet struct
   movia r5, PLAYER_STATE
@@ -80,13 +80,14 @@ ENEMY_BULLET:
 
   # Bullet collision to player, zero it out, apply to player
   stw r0, 0(r16)
+  # TODO: call pixel wise collision checker
   call PlayerHit
   br CHECK_DONE
 
 # 
 # Check player bullet against all enemies
 #
-PLAYER_BULLET:
+CHECK_PLAYER_BULLET:
   # Index into invasion
   movi r18, 0
 
@@ -146,13 +147,13 @@ CHECK_SHIELD:
   beq r2, r0, CHECK_NEXT_S
 
   # Zero the bullet out
-  stw r0, 0(r18)
+  stw r0, 0(r16)
   br CHECK_DONE
 
 CHECK_NEXT_S:
-  addi r19, r19, 1
+  addi r18, r18, 1
   movi r8, 4
-  blt r19, r8, S_CHECK
+  blt r18, r8, CHECK_SHIELD
 
 CHECK_DONE:
   ldw ra, 0(sp)
@@ -192,7 +193,7 @@ CheckShield:
 
   # If theres no collision return
   bne r2, r0, SHIELD_COL
-  br SHIELD_NOCOL
+  br SHIELD_NO_COL
 
 SHIELD_COL:
   # Bullet and shield positions
@@ -210,21 +211,21 @@ CHECK_BIT:
   # The direciton of the check depends on whether its from its form the enemy or player
   beq r19, r0, BIT_PLAYER
 BIT_ENEMY:
+  slli r11, r20, 16
+  add r10, r10, r11
+  br GET_BIT
+
+BIT_PLAYER:
   movi r11, 3
   sub r11, r11, r20
   slli r11, r11, 16
   add r10, r10, r11
   br GET_BIT
 
-BIT_PLAYER:
-  slli r11, r20, 16
-  add r10, r10, r11
-  br GET_BIT
-
 GET_BIT:
   # Get the address of the row by multiplying the y offset by 22
-  movia r11, 0xFFFF0000
-  and r11, r10, r11 
+  srli r11, r10, 16
+  subi r11, r11, 1
   movi r12, 22
   mul r11, r11, r12 
 
@@ -232,8 +233,11 @@ GET_BIT:
   andi r12, r10, 0xFFFF
 
   # Bit is now at SPRITE + r11 + r12
-  add r10, r11, r12
-  add r10, r10, r18 # r10 now has pointer to the byte with the pixel at the position of the bullet
+  add r13, r11, r12
+  # If its greater or equal to 352 we've gone over into the next
+  movi r11, 352
+  bge r13, r11, NEXT_BIT
+  add r10, r13, r18 # r10 now has pointer to the byte with the pixel at the position of the bullet
 
   # Load the byte
   ldb r10, 0(r10)
@@ -245,7 +249,7 @@ SHIELD_BIT_COL:
   # If theres a collision flip the bit off, return a 1
   # Pass the bitmap and offset in to the bitmap
   mov r4, r18
-  add r5, r11, r12
+  mov r5, r13
 
   call ShieldHit
   movi r2, 1
@@ -253,8 +257,8 @@ SHIELD_BIT_COL:
 
 NEXT_BIT:
   addi r20, r20, 1
-  movi r8, 4
-  blt r20, r8, CHECK_BIT
+  movi r10, 4
+  blt r20, r10, CHECK_BIT
 
 # If were here there was collision
 SHIELD_NO_COL:

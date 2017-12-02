@@ -15,7 +15,8 @@ UpdateBullets:
 
   # Move the bullet up 1
   srli r10, r8, 16
-  subi r10, r10, SPEED_PLAYER_BULLET
+	movia r11, SPEED_PLAYER_BULLET
+  sub r10, r10, r11
   
   # If its above the screen bounds zero it out
   bgt r10, r0, PLAYER_B_APPLY
@@ -102,7 +103,7 @@ Fire:
   ldw r10, 0(r9)
 
   # Add an offset of half the players width (-y +x), and enough height to fire above the player (assume width 16 height 8)
-  movia r9, 0xFFFC0008
+  movia r9, 0x00000008
   add r8, r10, r9
 
   # Store the bullet

@@ -3,7 +3,7 @@
 .equ SPEED_PLAYER_BULLET, 0x4
 .equ SPEED_ENEMY_BULLET, 0x2
 
-.equ SCREEN_HEIGHT, 240
+.equ SCREEN_HEIGHT, 227
 .equ SCREEN_WIDTH, 320
 .equ LEFT_BOUND, 51
 .equ RIGHT_BOUND, 269
@@ -15,20 +15,20 @@
 # Player state has first and second as x position, third byte as life, fourth byte as score, 
 PLAYER_STATE: 
 	.word 0 # position
-	.word 0x00070010 # size 16x7
+	.word 0x00080010 # size 16x7
 	.word 0
 
 .align 2
 # Position and rects of the lives images to display
 LIVES_UI:
-  .word(0x00E8004B)
-  .word(0x00070010)
+  .word(0x00E7004B)
+  .word(0x00080010)
 
-  .word(0x00E8005B)
-  .word(0x00070010)
+  .word(0x00E7005B)
+  .word(0x00080010)
 
-  .word(0x00E8006B)
-  .word(0x00070010)
+  .word(0x00E7006B)
+  .word(0x00080010)
 
 .align 2
 # Bullet represented as y/x position, i.e. 0xYYYYXXXXX value of 0 means dead
@@ -42,7 +42,7 @@ ENEMY_BULLETS:
   .space(80)
 
 .align 2
-SHIELDS_STATES:
+SHIELD_STATES:
 	.space(1408)
 
 # Sprites
@@ -72,6 +72,7 @@ PLAYER_SPRITE:
   .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
   .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
   .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
+  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
 
 .align 2
 SHIELDS: # Positions and the rect (22x16)
@@ -89,17 +90,13 @@ TICK:
 	.word(0x00000000)
 
 .global LEFT_BOUND, RIGHT_BOUND
-.global PLAYER_STATE
-.global PLAYER_BULLET
-.global ENEMY_BULLETS
+.global PLAYER_STATE, PLAYER_SPRITE
+.global PLAYER_BULLET, ENEMY_BULLETS
 .global SHIELDS, SHIELD_STATES, SHIELD_SPRITE
-.global PushAll
-.global PopAll
-.global TICK
-.global GREEN
-
-.global RestartGame
-.global GameLoop
+.global SPEED_PLAYER, SPEED_PLAYER_BULLET, SPEED_ENEMY_BULLET
+.global SCREEN_WIDTH, SCREEN_HEIGHT
+.global TICK, GREEN
+.global PushAll, PopAll, RestartGame, GameLoop
 
 .text
 
@@ -120,8 +117,8 @@ GameLoop:
   	call UpdatePlayer
   	call UpdateBullets
 	call UpdateShields
-  	#call CheckCollision
-  	#call DrawLives
+  	call CheckCollision
+  	call DrawUI
 
 	call drawing_swap_buffers
 
@@ -195,7 +192,7 @@ SHIELD_WORD:
 
   # Get offset into shield itself
   add r13, r13, r9
-  stw r15, 0(r13)
+  stw r14, 0(r13)
 
   # Loop 88 times
   movi r13, 88
@@ -251,13 +248,20 @@ UPDATE_SHIELDS_DONE:
 	ret
 
 # 
-# Draw Lives
+# Draw UI
 #
-DrawLives:
+DrawUI:
   addi sp, sp, -12
   stw ra, 0(sp)
   stw r16, 4(sp)
   stw r17, 8(sp)
+
+	# Draw h line
+	movia r4, LEFT_BOUND
+	movia r5, RIGHT_BOUND
+	movia r6, 0x00E6
+	movia r7, GREEN
+	call drawing_draw_hline
 
   # Load player lives
   movia r8, PLAYER_STATE
@@ -270,7 +274,7 @@ DRAW_LIFE:
   bge r16, r17, DRAW_LIVES_DONE
 
   movia r4, LIVES_UI
-  slli r8, r16, 2
+  slli r8, r16, 3
   add r4, r4, r8
   movia r5, PLAYER_SPRITE
   movia r6, GREEN
