@@ -20,3 +20,8 @@ November 26th, 2017
 November 28th, 2017
 - James: Set player sprite to draw, did a pass on
 collision, should work with all bullets colliding with player and shields
+
+December 1st, 2017
+- James: Got pixel destruction on shields working, added UI with player life
+loss/restart on no lives. Wrote bomb algorithm for shield destruction but not
+tested.
