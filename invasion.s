@@ -24,10 +24,10 @@ INIT_INVASION:
     movia r6, ALIENS                                # set all aliens to alive
     addi r7, r6, ALIEN_ROWS * ALIEN_COLS
     movi r8, 0x01
-    INIT_ALIEN_STATE:
-        stb r8, 0(r6)
-        addi r6, r6, 1
-        blt r6, r7, INIT_ALIEN_STATE
+INIT_ALIEN_STATE:
+    stb r8, 0(r6)
+    addi r6, r6, 1
+    blt r6, r7, INIT_ALIEN_STATE
 
     ret
 
@@ -72,50 +72,50 @@ DRAW_INVASION:
     beq r5, r0, DRAW_ALIEN_ROW
     addi r19, r19, ALIEN_SPRITE_SIZE
 
-    DRAW_ALIEN_ROW:
-        movia r4, INVASION_POSITION
-        ldh r20, 0(r4)                              # reset x position
+DRAW_ALIEN_ROW:
+    movia r4, INVASION_POSITION
+    ldh r20, 0(r4)                              # reset x position
 
-        addi r18, r17, ALIEN_COLS                   # reset end of row
+    addi r18, r17, ALIEN_COLS                   # reset end of row
         
-        srli r4, r16, 1                             # get table index
-        slli r4, r4, 2
+    srli r4, r16, 1                             # get table index
+    slli r4, r4, 2
 
-        movia r5, ALIEN_SPRITE_TABLE                # get alien sprite address
-        add r5, r5, r4
-        ldw r22, 0(r5)
-        add r22, r22, r19                           # offset into sprite for alien state
+    movia r5, ALIEN_SPRITE_TABLE                # get alien sprite address
+    add r5, r5, r4
+    ldw r22, 0(r5)
+    add r22, r22, r19                           # offset into sprite for alien state
 
-        movia r5, ALIEN_COLOR_TABLE                 # get alien color
-        add r5, r5, r4
-        ldw r23, 0(r5)
+    movia r5, ALIEN_COLOR_TABLE                 # get alien color
+    add r5, r5, r4
+    ldw r23, 0(r5)
 
-        DRAW_ALIEN:
-            ldb r4, 0(r17)                          # move along if alien is dead
-            beq r4, r0, NEXT_ALIEN
+DRAW_ALIEN:
+    ldb r4, 0(r17)                          # move along if alien is dead
+    beq r4, r0, NEXT_ALIEN
 
-            or r4, r20, r21
-            stw r4, 0(sp)
-            mov r4, sp                              # rectangle
-            mov r5, r22                             # sprite
-            mov r6, r23                             # color
-            #mov r5, r23
+    or r4, r20, r21
+    stw r4, 0(sp)
+    mov r4, sp                              # rectangle
+    mov r5, r22                             # sprite
+    mov r6, r23                             # color
+    #mov r5, r23
 			#call drawing_fill_rect
-			call drawing_draw_bitmap
+	call drawing_draw_bitmap
         
-        NEXT_ALIEN:        
-            addi r17, r17, 1                        # next alien
-            addi r20, r20, GRID_WIDTH               # increase x position
-            blt r17, r18, DRAW_ALIEN                # row done?
+NEXT_ALIEN:        
+    addi r17, r17, 1                        # next alien
+    addi r20, r20, GRID_WIDTH               # increase x position
+    blt r17, r18, DRAW_ALIEN                # row done?
 
-        addi r16, r16, 1                            # next row
+    addi r16, r16, 1                            # next row
 
-        movi r4, GRID_HEIGHT                        # decrease y position
-        slli r4, r4, 16
-        sub r21, r21, r4
+    movi r4, GRID_HEIGHT                        # decrease y position
+    slli r4, r4, 16
+    sub r21, r21, r4
 
-        movi r4, ALIEN_ROWS
-        blt r16, r4, DRAW_ALIEN_ROW                 # rows done?
+    movi r4, ALIEN_ROWS
+    blt r16, r4, DRAW_ALIEN_ROW                 # rows done?
 
     ldw ra, 40(sp)
     ldw r16, 36(sp)
@@ -145,75 +145,75 @@ MOVE_INVASION:
 
     beq r6, r0, MOVE_INVASION_LEFT
 
-    MOVE_INVASION_RIGHT:
-        movia r6, INVASION_POSITION
-        ldh r7, 0(r6)                               # current invasion x position
-        movia r8, MAX_X                             # right edge of screen
-        sub r8, r8, r7                              # get distance from invasion to edge
+MOVE_INVASION_RIGHT:
+	movia r6, INVASION_POSITION
+	ldh r7, 0(r6)                               # current invasion x position
+	movia r8, MAX_X                             # right edge of screen
+	sub r8, r8, r7                              # get distance from invasion to edge
 
-        movi r9, ALIEN_COLS * GRID_WIDTH            # no collision with edge of screen
-        bge r8, r9, DO_MOVE_RIGHT                   # just move right
+	movi r9, ALIEN_COLS * GRID_WIDTH            # no collision with edge of screen
+	bge r8, r9, DO_MOVE_RIGHT                   # just move right
 
-        movi r9, GRID_WIDTH                         # find column that would collide with edge
-        div r8, r8, r9
- 
-        movia r10, ALIENS                           # check if any aliens are still alive in this column
-        add r8, r10, r8                             # first alien to check
-        addi r9, r10, ALIEN_ROWS * ALIEN_COLS       # end of aliens array
-        movi r10, 1                                 # alive state
- 
-        CHECK_RIGHT_EDGE_COLLISION:
-            ldb r11, 0(r8)
-            beq r11, r10, MOVE_INVASION_DOWN        # an alive alien collided with edge, move down 
-            addi r8, r8, ALIEN_COLS
-            blt r8, r9, CHECK_RIGHT_EDGE_COLLISION
- 
-        DO_MOVE_RIGHT:                              # no collision, move aliens right
-            addi r7, r7, 2
-            sth r7, 0(r6)            
+	movi r9, GRID_WIDTH                         # find column that would collide with edge
+	div r8, r8, r9
 
-        ret
+	movia r10, ALIENS                           # check if any aliens are still alive in this column
+	add r8, r10, r8                             # first alien to check
+	addi r9, r10, ALIEN_ROWS * ALIEN_COLS       # end of aliens array
+	movi r10, 1                                 # alive state
 
-    MOVE_INVASION_LEFT:
-        movia r6, INVASION_POSITION
-        ldh r7, 0(r6)                               # current invasion x position
-        movia r8, MIN_X                             # left edge of screen
-        sub r8, r8, r7                              # get distance from invasion to edge
+CHECK_RIGHT_EDGE_COLLISION:
+	ldb r11, 0(r8)
+	beq r11, r10, MOVE_INVASION_DOWN        # an alive alien collided with edge, move down 
+	addi r8, r8, ALIEN_COLS
+	blt r8, r9, CHECK_RIGHT_EDGE_COLLISION
 
-        blt r8, r7, DO_MOVE_LEFT                    # no collision, just move left
+DO_MOVE_RIGHT:                              # no collision, move aliens right
+	addi r7, r7, 2
+	sth r7, 0(r6)            
 
-        movi r9, GRID_WIDTH                         # find column that would collide with edge
-        div r8, r8, r9
-        
-        movia r10, ALIENS                           # check if any aliens are still alive in this column
-        add r8, r10, r8                             # first alien to check
-        addi r9, r10, ALIEN_ROWS * ALIEN_COLS       # end of aliens array
-        movi r10, 1                                 # alive state
-    
-        CHECK_LEFT_EDGE_COLLISION:
-            ldb r11, 0(r8)
-            beq r11, r10, MOVE_INVASION_DOWN        # an alive alien collided with edge, move down
-            addi r8, r8, ALIEN_COLS
-            blt r8, r9, CHECK_LEFT_EDGE_COLLISION   # no collision, move aliens left
+	ret
 
-        DO_MOVE_LEFT:
-            subi r7, r7, 2
-            sth r7, 0(r6)
+MOVE_INVASION_LEFT:
+	movia r6, INVASION_POSITION
+	ldh r7, 0(r6)                               # current invasion x position
+	movia r8, MIN_X                             # left edge of screen
+	sub r8, r8, r7                              # get distance from invasion to edge
 
-        ret
+	blt r8, r7, DO_MOVE_LEFT                    # no collision, just move left
 
-    MOVE_INVASION_DOWN:
-        movia r6, INVASION_POSITION
-        ldh r7, 2(r6)                               # current y position
-        movi r8, ALIEN_DROP_DISTANCE
-        add r7, r7, r8
-        sth r7, 2(r6)
+	movi r9, GRID_WIDTH                         # find column that would collide with edge
+	div r8, r8, r9
+	
+	movia r10, ALIENS                           # check if any aliens are still alive in this column
+	add r8, r10, r8                             # first alien to check
+	addi r9, r10, ALIEN_ROWS * ALIEN_COLS       # end of aliens array
+	movi r10, 1                                 # alive state
 
-        movia r6, INVASION_DIRECTION_MASK           # toggle direction
-        xor r5, r5, r6
-        stw r5, 0(r4)
-        
-    ret
+CHECK_LEFT_EDGE_COLLISION:
+	ldb r11, 0(r8)
+	beq r11, r10, MOVE_INVASION_DOWN        # an alive alien collided with edge, move down
+	addi r8, r8, ALIEN_COLS
+	blt r8, r9, CHECK_LEFT_EDGE_COLLISION   # no collision, move aliens left
+
+DO_MOVE_LEFT:
+	subi r7, r7, 2
+	sth r7, 0(r6)
+
+	ret
+
+MOVE_INVASION_DOWN:
+	movia r6, INVASION_POSITION
+	ldh r7, 2(r6)                               # current y position
+	movi r8, ALIEN_DROP_DISTANCE
+	add r7, r7, r8
+	sth r7, 2(r6)
+
+	movia r6, INVASION_DIRECTION_MASK           # toggle direction
+	xor r5, r5, r6
+	stw r5, 0(r4)
+	
+	ret
 
 ALIEN_BULLET_COLLISION:
     ret
@@ -227,7 +227,7 @@ ALIEN_BULLET_COLLISION:
 # r2: position
 GET_ALIEN_POSITION:
 	movia r2, 0x0
-  ret
+	ret
 
 # Kills the alien at the given index.
 #

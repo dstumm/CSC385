@@ -9,15 +9,16 @@ SEED:
 
 .align 2
 ALIEN_DUMMY:
-.word 0
-.word 0x00100008
+	.word 0
+	.word 0x00100008
 
 .text
 .global CheckCollision
+
 CheckCollision:
-    addi sp, sp, -8 
-    stw ra, 0(sp)
-    stw r16, 4(sp)
+	addi sp, sp, -8 
+	stw ra, 0(sp)
+	stw r16, 4(sp)
 
     # The only collision really is with bullets
 
@@ -112,16 +113,16 @@ CHECK_PLAYER_BULLET:
 
     CHECK_ENEMY:
 
-    movia r8, ALIENS
-    add r8, r8, r18           # r8 has index into Aliens, we need to calculate the position
-ldb r8, 0(r8)
-    andi r8, r8, 0x1      # r8 is this aliens state
-    movi r9, 2
-    bne r8, r9, CHECK_NEXT_ENEMY # 2 = alive, only collide with living aliens
+	movia r8, ALIENS
+	add r8, r8, r18           # r8 has index into Aliens, we need to calculate the position
+	ldb r8, 0(r8)
+	andi r8, r8, 0x1      # r8 is this aliens state
+	movi r9, 2
+	bne r8, r9, CHECK_NEXT_ENEMY # 2 = alive, only collide with living aliens
 
-# Alien is alive, get its actual
-    mov r4, r18
-    call GET_ALIEN_POSITION
+	# Alien is alive, get its actual
+	mov r4, r18
+	call GET_ALIEN_POSITION
 
     mov r4, r16           # Bullet struct
     movia r5, ALIEN_DUMMY # Alien dummy
@@ -129,58 +130,58 @@ ldb r8, 0(r8)
 
     call ABAB
 
-    beq r2, r0, CHECK_NEXT_ENEMY:
-# Bullet collision to enemy, zero it out
-stw r0, 0(r16)
-    mov r4, r18
-    call KILL_ALIEN
-# r2 has pointers, r3 has remaining alive aliens
+	beq r2, r0, CHECK_NEXT_ENEMY:
+	# Bullet collision to enemy, zero it out
+	stw r0, 0(r16)
+	mov r4, r18
+	call KILL_ALIEN
+	# r2 has pointers, r3 has remaining alive aliens
 
-    CHECK_NEXT_ENEMY:
+CHECK_NEXT_ENEMY:
     addi r18, r18, 1
     movi r8, 55
     blt r18, r8, CHECK_ENEMY
-    br ALL_BULLETS
+	br ALL_BULLETS
 
-#
-# Check all bullets against shield
-#
-    ALL_BULLETS:
-    movi r18, 0           # Save shield counter
-    CHECK_SHIELD:
+	#
+	# Check all bullets against shield
+	#
+ALL_BULLETS:
+	movi r18, 0           # Save shield counter
+CHECK_SHIELD:
 
-# First 2 params are bullet
-    mov r4, r16           # Bullet
-    movia r5, SHIELDS
-    slli r8, r18, 3
-    add r5, r5, r8        # Shield pointer
+	# First 2 params are bullet
+	mov r4, r16           # Bullet
+	movia r5, SHIELDS
+	slli r8, r18, 3
+	add r5, r5, r8        # Shield pointer
 
-    movi r9, 352
-    mul r8, r18, r9
-    movia r6, SHIELD_STATES
-    add r6, r6, r8        # Sprite pointer
+	movi r9, 352
+	mul r8, r18, r9
+	movia r6, SHIELD_STATES
+	add r6, r6, r8        # Sprite pointer
     mov r7, r17           # Player/enemy bullet
 
-# Call recursive function on shield, returns collision happens in r2, collision row/column in r3
-    call CheckShield
-    beq r2, r0, CHECK_NEXT_S
+	# Call recursive function on shield, returns collision happens in r2, collision row/column in r3
+	call CheckShield
+	beq r2, r0, CHECK_NEXT_S
 
-# Zero the bullet out
-stw r0, 0(r16)
-    br CHECK_DONE
+	# Zero the bullet out
+	stw r0, 0(r16)
+	br CHECK_DONE
 
-    CHECK_NEXT_S:
-    addi r18, r18, 1
-    movi r8, 4
-    blt r18, r8, CHECK_SHIELD
+CHECK_NEXT_S:
+	addi r18, r18, 1
+	movi r8, 4
+	blt r18, r8, CHECK_SHIELD
 
-    CHECK_DONE:
+CHECK_DONE:
     ldw ra, 0(sp)
     ldw r16, 4(sp)
-    ldw r17, 8(sp)
-ldw r18, 12(sp)
-    addi sp, sp, 16
-    ret
+	ldw r17, 8(sp)
+	ldw r18, 12(sp)
+	addi sp, sp, 16
+	ret
 
 #
 # Check Shield
@@ -191,57 +192,57 @@ ldw r18, 12(sp)
 # @param r7, player 0 or enemy 1 bullet
 # @return r2, collision 1, not 0
 #
-    CheckShield:
-# Save a few callee that we can rely on
+CheckShield:
+	# Save a few callee that we can rely on
     addi sp, sp, -24
     stw r16, 0(sp)
     stw r17, 4(sp)
     stw r18, 8(sp)
     stw r19, 12(sp)
-    stw r20, 16(sp)
-stw ra, 20(sp)
+	stw r20, 16(sp)
+	stw ra, 20(sp)
 
-# Now we can safely keep shield number and original offset and use it anywhere in the function
-    mov r16, r4
-    mov r17, r5
-    mov r18, r6
-    mov r19, r7
+	# Now we can safely keep shield number and original offset and use it anywhere in the function
+	mov r16, r4
+	mov r17, r5
+	mov r18, r6
+	mov r19, r7
 
-# First we call ABAB on the bullet and shield
-    call ABAB
+	# First we call ABAB on the bullet and shield
+	call ABAB
 
-# If theres no collision return
-    bne r2, r0, SHIELD_COL
-    br SHIELD_NO_COL
+	# If theres no collision return
+	bne r2, r0, SHIELD_COL
+	br SHIELD_NO_COL
 
-    SHIELD_COL:
-# Bullet and shield positions
-    ldw r8, 0(r16)
-ldw r9, 0(r17)
+SHIELD_COL:
+	# Bullet and shield positions
+	ldw r8, 0(r16)
+	ldw r9, 0(r17)
 
-# Need to check all 4 bits of the bullet
-    movi r20, 0
-    CHECK_BIT:
-# Get the offset of the bullet into the shield
-    sub r10, r8, r9 # offset of bullet into shield
+	# Need to check all 4 bits of the bullet
+	movi r20, 0
+CHECK_BIT:
+	# Get the offset of the bullet into the shield
+	sub r10, r8, r9 # offset of bullet into shield
 
-# There are 4 bits we need to check, from bullet position to bullet position + 3
-# Add into the offset based on the counter 
-# The direciton of the check depends on whether its from its form the enemy or player
-    beq r19, r0, BIT_PLAYER
-    BIT_ENEMY:
-    slli r11, r20, 16
+	# There are 4 bits we need to check, from bullet position to bullet position + 3
+	# Add into the offset based on the counter 
+	# The direciton of the check depends on whether its from its form the enemy or player
+	beq r19, r0, BIT_PLAYER
+BIT_ENEMY:
+	slli r11, r20, 16
     add r10, r10, r11
     br GET_BIT
 
-    BIT_PLAYER:
+BIT_PLAYER:
     movi r11, 3
     sub r11, r11, r20
     slli r11, r11, 16
     add r10, r10, r11
     br GET_BIT
 
-    GET_BIT:
+GET_BIT:
     # Get the address of the row by multiplying the y offset by 22
     srli r11, r10, 16
     # THIS WAS A GARBAGE ONE OFF ERROR THAT TOOK HOURS TO FIX ARRGGGG
@@ -265,7 +266,7 @@ ldw r9, 0(r17)
     # Return whethers theres a collision or not
     beq r11, r0, NEXT_BIT
 
-    SHIELD_BIT_COL:
+SHIELD_BIT_COL:
     # If theres a collision flip the bit off, return a 1
     # Pass the bitmap and offset in to the bitmap
     mov r4, r18
@@ -275,25 +276,25 @@ ldw r9, 0(r17)
     movi r2, 1
     br CHECK_SHIELD_DONE
 
-    NEXT_BIT:
+NEXT_BIT:
     addi r20, r20, 1
     movi r10, 4
     blt r20, r10, CHECK_BIT
 
     # If were here there was collision
-    SHIELD_NO_COL:
+SHIELD_NO_COL:
     movi r2, 0
     br CHECK_SHIELD_DONE
 
-    CHECK_SHIELD_DONE:
+CHECK_SHIELD_DONE:
     ldw r16, 0(sp)
     ldw r17, 4(sp)
     ldw r18, 8(sp)
     ldw r19, 12(sp)
-    ldw r20, 16(sp)
-ldw ra, 20(sp)
-    addi sp, sp, 24
-    ret 
+	ldw r20, 16(sp)
+	ldw ra, 20(sp)
+	addi sp, sp, 24
+	ret 
 
 # Shield has been hit, destroy a number of pixels at that location
 # @param r4 sprite of the shield
@@ -357,7 +358,7 @@ PROP:
 
     addi sp, sp, -4
     stw r10, 0(sp)
-    call RandomNumberr
+    call RandomNumber
     ldw r10, 0(sp)
     addi, sp, sp, 4
 
@@ -406,30 +407,31 @@ SHIELD_HIT_DONE:
     ret
 
 RandomNumber:
- movia r2, SEED
- ldw r2, 0(r2)
+	movia r2, SEED
+	ldw r2, 0(r2)
 
- /* Determine next bit via XOR */
- srli r3, r2, LFSR_1
- xor r3, r2, r3
+	# Determine next bit via XOR 
+	srli r3, r2, LFSR_1
+	xor r3, r2, r3
 
- srli r8, r2, LFSR_2
- xor r3, r3, r8
+	srli r8, r2, LFSR_2
+	xor r3, r3, r8
 
- srli r8, r2, LFSR_3
- xor r3, r3, r8
- 
- /* only need a single bit */
- andi r3, r3, 1
+	srli r8, r2, LFSR_3
+	xor r3, r3, r8
 
- srli r2, r2, 1
- slli r3, r3, 15
- or r2, r2, r3
+	# only need a single bit 
+	andi r3, r3, 1
 
- movia r3, SEED
- stw r2, 0(r3)
+	srli r2, r2, 1
+	slli r3, r3, 15
+	or r2, r2, r3
 
- ret
+	movia r3, SEED
+	stw r2, 0(r3)
+
+	ret
+
 # 
 # ABAB test, given rect A rect B, return if they overlay
 # Rect as 2 words postition:0xYYYYXXXX, size:0xHHHHWWWW
@@ -438,19 +440,19 @@ RandomNumber:
 # @return r2 1 if overlap, 0 if not
 ABAB:
     addi sp, sp, -4
-stw ra, 0(sp)
+	stw ra, 0(sp)
 
-    # Load and spread across r6, r7
-    ldw r6, 0(r5)
-    ldw r7, 4(r5)
-    ldw r5, 4(r4)
-ldw r4, 0(r4)
+	# Load and spread across r6, r7
+	ldw r6, 0(r5)
+	ldw r7, 4(r5)
+	ldw r5, 4(r4)
+	ldw r4, 0(r4)
 
-    call ABAB_NO_STRUCT
+	call ABAB_NO_STRUCT
 
-ldw ra, 0(sp)
-    addi sp, sp, 4
-    ret
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+	ret
 
 # 
 # ABAB that takes its arguments as 
@@ -492,11 +494,11 @@ ABAB_NO_STRUCT:
     blt r9, r8, NOCOL    # If A's top edge is less than B's y, no collision
 
     # If we got here there must be overlap
-    COL:
+COL:
     movi r2, 1
     ret
 
-    NOCOL:
+NOCOL:
     movi r2, 0
     ret
 

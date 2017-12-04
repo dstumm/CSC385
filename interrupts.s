@@ -29,11 +29,11 @@ TIMER_INTR:
 	ldwio r9, 0(r8)
 	andi r9, r9, 2
 	stwio r0, 0(r8)
-  # Set tick to go
-  #call GameLoop
-  movia r8, TICK_STATE
-  movi r9, 1
-  sth r9, 0(r8)
+	# Set tick to go
+	#call GameLoop
+	movia r8, TICK_STATE
+	movi r9, 1
+	sth r9, 0(r8)
 	br EXIT_HANDLER
 
 #

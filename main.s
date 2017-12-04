@@ -39,9 +39,9 @@ TICK_STATE:
 	# Initialize sp
 	#movia sp, 0x03FFFFFC
 
-  # Zero tick
-  movia r8, TICK_STATE
-  sth r0, 0(r8)
+	# Zero tick
+	movia r8, TICK_STATE
+	sth r0, 0(r8)
 
 	# Timer
 	movia r8, ADDR_TIMER
