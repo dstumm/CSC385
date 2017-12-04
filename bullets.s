@@ -57,9 +57,9 @@ ENEMY_B_MOVE:
   br NEXT_B
  
 ENEMY_B_APPLY:
-  slli r10, r10, 16
+  slli r11, r10, 16
   andi r8, r8, 0xFFFF
-  or r8, r8, r10
+  or r8, r8, r11
   stw r8, 0(r9)
 
 	addi sp, sp, -12
@@ -67,8 +67,17 @@ ENEMY_B_APPLY:
 	stw r9, 4(sp)
 	stw r12, 8(sp)
 	mov r4, r9
-	movia r5, 0x2FD6
-	call drawing_fill_rect
+    movia r5, ENEMY_BULLET_SPRITE
+
+    # Add offset into sprite based off height to animate
+    srli r10, r10, 2 # Height / 4
+    andi r10, r10, 1
+    movi r11, 8 # Sprite size
+    mul r10, r10, r11
+    add r5, r5, r10
+
+	movia r6, 0xFFFF
+	call drawing_draw_bitmap
 	ldw ra, 0(sp)
 	ldw r9, 4(sp)
 	ldw r12, 8(sp)

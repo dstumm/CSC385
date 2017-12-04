@@ -1,4 +1,11 @@
 .data
+.equ LFSR_1, 5
+.equ LFSR_2, 9
+.equ LFSR_3, 11
+
+.align 2
+SEED:
+    .word(0x12345678)
 
 .align 2
 ALIEN_DUMMY:
@@ -292,13 +299,14 @@ ldw ra, 20(sp)
 # @param r4 sprite of the shield
 # @param r5 pixel index into the sprite from the top left
 ShieldHit:
-    addi sp, sp, -8
+    addi sp, sp, -12
     stw r16, 0(sp)
     stw r17, 4(sp)
+    stw ra, 8(sp)
     # Go in loop from (-2, -2) to (2, 2)
     # Depending on distance from center, set a probability of destruction
 
-    # Random seed
+    # Pixel pointer
     add r16, r4, r5
 
     # Row
@@ -347,8 +355,14 @@ PROP:
     movi r10, 10
     sub r10, r10, r11
 
+    addi sp, sp, -4
+    stw r10, 0(sp)
+    call RandomNumberr
+    ldw r10, 0(sp)
+    addi, sp, sp, 4
+
     # Get the first 4 bits of the seed
-    andi r11, r16, 0xF
+    andi r11, r2, 0xF
 
     # If r10 is greater than these 4 bits, destroy the pixel
     blt r10, r11, NEXT_PIXEL
@@ -372,10 +386,6 @@ PROP:
 
     # Ready for next pixel
 NEXT_PIXEL:
-    # Shift seed and add random stuff
-    srli r16, r16, 1
-    add r16, r16, r11
-
     # Increment x, if greater than width go to next row
     addi r8, r8, 1
     movi r10, 22
@@ -391,9 +401,35 @@ NEXT_ROW:
 SHIELD_HIT_DONE:
     ldw r16, 0(sp)
     ldw r17, 4(sp)
-    addi sp, sp, 8
+    ldw ra, 8(sp)
+    addi sp, sp, 12
     ret
 
+RandomNumber:
+ movia r2, SEED
+ ldw r2, 0(r2)
+
+ /* Determine next bit via XOR */
+ srli r3, r2, LFSR_1
+ xor r3, r2, r3
+
+ srli r8, r2, LFSR_2
+ xor r3, r3, r8
+
+ srli r8, r2, LFSR_3
+ xor r3, r3, r8
+ 
+ /* only need a single bit */
+ andi r3, r3, 1
+
+ srli r2, r2, 1
+ slli r3, r3, 15
+ or r2, r2, r3
+
+ movia r3, SEED
+ stw r2, 0(r3)
+
+ ret
 # 
 # ABAB test, given rect A rect B, return if they overlay
 # Rect as 2 words postition:0xYYYYXXXX, size:0xHHHHWWWW

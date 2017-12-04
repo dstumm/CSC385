@@ -45,53 +45,11 @@ ENEMY_BULLETS:
 SHIELD_STATES:
 	.space(1408)
 
-# Sprites
-SHIELD_SPRITE:
-  .byte 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0
-  .byte 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0
-  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0
-  .byte 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1
-  .byte 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1
 
-PLAYER_SPRITE:
-  .byte 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0
-  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
-  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
-  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
-  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
-
-PLAYER_SPRITE_RESPAWN:
-  .byte 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0
-  .byte 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0
-  .byte 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0
-  .byte 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0
-  .byte 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1
-
-  .byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  .byte 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0
-  .byte 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0
-  .byte 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0
-  .byte 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0
-  .byte 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0
-  .byte 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1
-  .byte 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
+.align 2
+CHAR_RECT:
+    .word(0)
+    .word(0x00070005)
 
 .align 2
 SHIELDS: # Positions and the rect (22x16)
@@ -109,9 +67,8 @@ TICK:
 	.word(0x00000000)
 
 .global LEFT_BOUND, RIGHT_BOUND
-.global PLAYER_STATE, PLAYER_SPRITE, PLAYER_SPRITE_RESPAWN
-.global PLAYER_BULLET, ENEMY_BULLETS
-.global SHIELDS, SHIELD_STATES, SHIELD_SPRITE
+.global PLAYER_STATE, PLAYER_BULLET, ENEMY_BULLETS
+.global SHIELDS, SHIELD_STATES 
 .global SPEED_PLAYER, SPEED_PLAYER_BULLET, SPEED_ENEMY_BULLET
 .global SCREEN_WIDTH, SCREEN_HEIGHT
 .global TICK, GREEN
@@ -175,7 +132,7 @@ RestartGame:
   movia r9, ENEMY_BULLETS:
 ZERO_ENEMY_BULLET:
   stw r0, 0(r9)
-  movia r12, 0x00040001
+  movia r12, 0x00040002
   stw r12, 4(r9)
   addi r10, r10, -1
   addi r9, r9, 8
@@ -270,10 +227,11 @@ UPDATE_SHIELDS_DONE:
 # Draw UI
 #
 DrawUI:
-  addi sp, sp, -12
+  addi sp, sp, -16
   stw ra, 0(sp)
   stw r16, 4(sp)
   stw r17, 8(sp)
+  stw r18, 12(sp)
 
 	# Draw h line
 	movia r4, LEFT_BOUND
@@ -282,15 +240,16 @@ DrawUI:
 	movia r7, GREEN
 	call drawing_draw_hline
 
-  # Load player lives
+  # Load player lives and store
   movia r8, PLAYER_STATE
   ldw r8, 8(r8)
   srli r17, r8, 16
+  andi r18, r8, 0xFFFF
 
   # Loop
   movi r16, 0
 DRAW_LIFE:
-  bge r16, r17, DRAW_LIVES_DONE
+  bge r16, r17, DRAW_SCORE
 
   movia r4, LIVES_UI
   slli r8, r16, 3
@@ -302,10 +261,88 @@ DRAW_LIFE:
   addi r16, r16, 1
   br DRAW_LIFE
 
-DRAW_LIVES_DONE:
+  # Draw score (8 chars)
+  movi r16, 0
+DRAW_SCORE_LABEL:
+   movi r8, 8 
+   bge r16, r8, DRAW_SCORE
+
+   # Multiply count by spacing (spaced 8)
+   slli r8, r16, 3
+   movia r9, LEFT_BOUND
+   add r8, r8, r9
+   movia r9, 0x00010007
+   add r8, r8, r9
+   movia r4, CHAR_RECT
+   stw r8, 0(r4)
+
+    # Multiply count by 35 to get correct char
+    movi r8, 35
+    mul r8, r8, r16
+    movia r5, SCORE
+    add r5, r5, r8
+
+    movia r6, GREEN
+    call drawing_draw_bitmap
+    br DRAW_SCORE_LABEL
+
+    movi r16, 0
+DRAW_SCORE:
+    movi r8, 4
+    bge r16, r8, DRAW_UI_DONE:
+
+    # Main offset (from the rightmost digit)
+   slli r9, r16, 3
+   mov r8, r0
+   sub r8, r8, r9
+   movia r9, LEFT_BOUND
+   add r8, r8, r9
+   movia r9, 0x0011002F
+   add r8, r8, r9
+   movia r4, CHAR_RECT
+   stw r8, 0(r4)
+
+    # Default to zero
+    movi r8, 0
+    beq r16, r0, CALL_DRAW
+
+    # Now we want to isolate the lowest most bits
+    # Divide score by 10, then multiply and subtract from original
+    movi r9, 10
+    div r8, r18, r9
+    mul r8, r8, r9
+    sub r8, r18, r8
+
+    # TODO: if this doesn't work we can just subtract 100s/10s until less than 10
+    #mov r8, r18
+#SHRINK:
+    #movi r9, 10
+    #blt r8, r9, CALL_DRAW
+    #subi r8, 10
+    #br SHRINK
+
+    # Should now have hopefully isolated the ones bit
+
+CALL_DRAW:
+    # Multiply char offset by 35
+    movi r9, 35
+    mul r8, r8, r9
+    movia r9, NUMBERS
+    add r5, r8, r9
+
+    movia r6, GREEN
+    call drawing_draw_bitmap
+
+    # Divide score by 10
+    movi r9, 10
+    div r18, r18, r9
+    br DRAW_SCORE
+
+DRAW_UI_DONE:
   ldw ra, 0(sp)
   ldw r16, 4(sp)
   ldw r17, 8(sp)
+  ldw r18, 12(sp)
   addi sp, sp, 12
   ret
 
