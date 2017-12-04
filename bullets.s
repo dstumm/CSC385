@@ -66,7 +66,7 @@ ENEMY_B_APPLY:
 	movia r5, ENEMY_BULLET_SPRITE
 
 	# Add offset into sprite based off height to animate
-	srli r10, r10, 2 # Height / 4
+	srli r10, r10, 3 # Height / 8
 	andi r10, r10, 1
 	movi r11, 8 # Sprite size
 	mul r10, r10, r11

@@ -1,4 +1,5 @@
 .data
+
 .equ LFSR_1, 5
 .equ LFSR_2, 9
 .equ LFSR_3, 11
@@ -101,7 +102,7 @@ AGAINST_PLAYER_BULLET:
     # Bullet to bullet collision, zero them both out
     stw r0, 0(r16)
     movia r8, PLAYER_BULLET
-    stwo, r0, 0(r8)
+    stw r0, 0(r8)
     br CHECK_DONE
 
 # 
@@ -342,12 +343,12 @@ DESTROY_PIXEL:
     blt r10, r0, ADD_1
     br PROB
 ADD_1:
-    add r10, r10, 1
+    addi r10, r10, 1
     br PROB
 SUB_1:
     subi r10, r10, 1
     br PROB
-PROP:
+PROB:
     # Multiply by 3 to get number between 0 and 9
     movi r11, 3
     mul r11, r10, r11
@@ -358,9 +359,9 @@ PROP:
 
     addi sp, sp, -4
     stw r10, 0(sp)
-    call RandomNumber
+    call RandomNum
     ldw r10, 0(sp)
-    addi, sp, sp, 4
+    addi sp, sp, 4
 
     # Get the first 4 bits of the seed
     andi r11, r2, 0xF
@@ -370,8 +371,8 @@ PROP:
 
     # Pass bounds and probability check
     # Can calculate actual pixel now
-    slri r11, r17, 16
-    subi r11, r11 1
+    srli r11, r17, 16
+    subi r11, r11, 1
     movi r12, 22
     mul r11, r11, r12
     andi r12, r10, 0xFFFF
@@ -406,7 +407,7 @@ SHIELD_HIT_DONE:
     addi sp, sp, 12
     ret
 
-RandomNumber:
+RandomNum:
 	movia r2, SEED
 	ldw r2, 0(r2)
 

@@ -1,4 +1,5 @@
 .data
+
 .align 1
 RESPAWN:
     .hword(0)

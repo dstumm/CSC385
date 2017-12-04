@@ -46,7 +46,6 @@ ENEMY_BULLETS:
 SHIELD_STATES:
 	.space(1408)
 
-
 .align 2
 CHAR_RECT:
 	.word(0)
@@ -63,7 +62,7 @@ SHIELDS: # Positions and the rect (22x16)
 	.word(0x00b800D8)
 	.word(0x00100016)
 
-.align
+.align 2
 TICK:
 	.word(0x00000000)
 
@@ -130,7 +129,7 @@ RestartGame:
 
 	# Zero enemy bullets
 	movi r10, 10
-	movia r9, ENEMY_BULLETS:
+	movia r9, ENEMY_BULLETS
 ZERO_ENEMY_BULLET:
 	stw r0, 0(r9)
 	movia r12, 0x00040002
@@ -336,6 +335,7 @@ CALL_DRAW:
 
     # Divide score by 10
     movi r9, 10
+	addi r16, r16, 1
     div r18, r18, r9
     br DRAW_SCORE
 
@@ -344,7 +344,7 @@ DRAW_UI_DONE:
 	ldw r16, 4(sp)
 	ldw r17, 8(sp)
 	ldw r18, 12(sp)
-	addi sp, sp, 12
+	addi sp, sp, 16
 	ret
 
 PushAll:

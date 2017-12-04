@@ -11,15 +11,14 @@
         <type>C Program</type>
         <source_files>
             <source_file filepath="true">drawing.c</source_file>
-            <source_file filepath="true">bullets.s</source_file>
-            <source_file filepath="true">collision.s</source_file>
-            <source_file filepath="true">drawing.c</source_file>
-            <source_file filepath="true">gamelogic.s</source_file>
-            <source_file filepath="true">interrupts.s</source_file>
-            <source_file filepath="true">invasion.s</source_file>
             <source_file filepath="true">main.s</source_file>
             <source_file filepath="true">player.s</source_file>
+            <source_file filepath="true">gamelogic.s</source_file>
             <source_file filepath="true">sprites.s</source_file>
+            <source_file filepath="true">invasion.s</source_file>
+            <source_file filepath="true">bullets.s</source_file>
+            <source_file filepath="true">collision.s</source_file>
+            <source_file filepath="true">interrupts.s</source_file>
         </source_files>
         <options>
             <compiler_flags>-g -O0 -ffunction-sections -fverbose-asm -fno-inline -mno-cache-volatile</compiler_flags>
