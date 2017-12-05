@@ -338,12 +338,14 @@ CALL_DRAW:
     call drawing_draw_bitmap
 
 	# Set the correct 7 zero
-	movia r12, ADDR_7SEG
-	add r12, r12, r16
-	movia r13, SEVENSEGNUM
-	add r13, r13, r17
-	ldb r13, 0(r13)
-	stbio r13, 0(r12)
+	#movia r12, ADDR_7SEG
+	#mov r13, r16
+	#slli r13, r16, 2
+	#add r12, r12, r13
+	#movia r13, SEVENSEGNUM
+	#add r13, r13, r17
+	#ldb r13, 0(r13)
+	#stbio r13, 0(r12)
 
     # Divide score by 10
     movi r9, 10
