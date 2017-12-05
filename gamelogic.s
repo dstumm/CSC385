@@ -89,6 +89,7 @@ GameLoop:
 
 	call UPDATE_INVASION
 
+	call UPDATE_INVASION
   	call UpdatePlayer
   	call UpdateBullets
 	call UpdateShields

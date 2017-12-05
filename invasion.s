@@ -297,6 +297,8 @@ CHECK_TIMER:
     br INVASION_AI_DONE
 
 TRY_TO_FIRE:
+	movia r4, PLAYER_STATE
+	ldh r4, 0(r4)
     call FIND_COLUMN
     blt r2, r0, INVASION_AI_DONE                    # no column is over the player, don't fire
 
@@ -439,12 +441,12 @@ GET_ALIEN:
     blt r2, r0, GET_FAILED  
 
     add r19, r18, r2
-    sth r3, 0(r17)                                  # store x position
+    sth r3, 2(r17)                                  # store x position
 
     mov r4, r16                                     # find row
     call FIND_ROW
     blt r2, r0, GET_FAILED
-    sth r3, 2(r17)                                  # store y position
+    sth r3, 0(r17)                                  # store y position
 
     muli r4, r2, ALIEN_COLS                         # make sure alien is alive
     add r19, r19, r4
@@ -452,9 +454,9 @@ GET_ALIEN:
     beq r4, r0, GET_FAILED
 
     movi r4, ALIEN_SPRITE_WIDTH                     # store sprite size
-    sth r4, 4(r17)
-    movi r4, ALIEN_SPRITE_HEIGHT
     sth r4, 6(r17)
+    movi r4, ALIEN_SPRITE_HEIGHT
+    sth r4, 4(r17)
 
     movia r4, INVASION_STATE
     ldw r5, 0(r4)
@@ -531,9 +533,9 @@ KILL_ALIEN:
 # r2: column index
 # r3: x position of column
 FIND_COLUMN:
-    movia r5, INVASION_POSITION                      # get invasion position
+    movia r5, INVASION_POSITION                     # get invasion position
     ldh r5, 0(r5)
-    sub r4, r5, r4                                  # convert x coordinate relative to invasion position
+    sub r4, r4, r5                                  # convert x coordinate relative to invasion position
     blt r4, r0, FIND_COLUMN_FAIL                    # out of bounds...
 
     movi r6, GRID_WIDTH                             # get column index
@@ -571,8 +573,8 @@ FIND_ROW:
     sub r2, r6, r2
 
     muli r3, r2, GRID_HEIGHT                        # compute y position for row
-    add r3, r3, r5
-    addi r3, r3, ALIEN_SPRITE_HEIGHT                # offset to top of sprite
+    sub r3, r3, r5
+    subi r3, r3, ALIEN_SPRITE_HEIGHT                # offset to top of sprite
     ret
 
 FIND_ROW_FAIL:
