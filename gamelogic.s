@@ -90,6 +90,7 @@ GameLoop:
 	#call DRAW_INVASION
 	#call MOVE_INVASION
 
+	call UPDATE_INVASION
   	call UpdatePlayer
   	call UpdateBullets
 	call UpdateShields
