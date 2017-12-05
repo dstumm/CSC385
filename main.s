@@ -3,6 +3,7 @@
 .equ ADDR_LEDS, 0xff200000
 .equ ADDR_7SEG, 0xfff00020
 .equ ADDR_KEYBOARD, 0xff200100
+.equ ADDR_7SEG, 0xff200020
 
 .equ RIGHT_ARROW_KEY, 0x1
 .equ UP_ARROW_KEY, 0x2
@@ -25,6 +26,7 @@ TICK_STATE:
 .global ADDR_LEDS
 .global ADDR_TIMER
 .global ADDR_KEYBOARD
+.global ADDR_7SEG
 .global TICK_STATE
 .global ParseKey
 

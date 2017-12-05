@@ -75,7 +75,7 @@ CHECK_FIRE:
 	stw r8, 0(sp)
 	sth r9, 4(sp)
 	call Fire	
-	movia r4, 0x001000A0
+	movia r4, 0x001000B8
 	call FireEnemy
 	ldw r8, 0(sp)
 	ldh r9, 4(sp)

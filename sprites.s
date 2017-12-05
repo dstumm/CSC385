@@ -1,5 +1,6 @@
 .data
 .global SHIELD_SPRITE, PLAYER_SPRITE, PLAYER_SPRITE_RESPAWN, NUMBERS, SCORE, ENEMY_BULLET_SPRITE
+.global SEVENSEGNUM
 
 ENEMY_BULLET_SPRITE:
 	.byte 1, 0
@@ -104,7 +105,7 @@ NUMBERS:
     .byte 0, 1, 0, 1, 0
     .byte 1, 0, 0, 1, 0
     .byte 1, 1, 1, 1, 1
-    .byte 0, 0, 0, 1, 1
+    .byte 0, 0, 0, 1, 0
     .byte 0, 0, 0, 1, 0
 
     # 5
@@ -225,3 +226,15 @@ SCORE:
     .byte 0, 0, 0, 1, 0
     .byte 0, 0, 1, 0, 0
     .byte 0, 1, 0, 0, 0
+
+SEVENSEGNUM:
+	.byte 0x3f #(0b00111111)
+	.byte 0x06 #(0b00000110)
+	.byte 0x5b #(0b01011011)
+	.byte 0x4f #(0b01001111)
+	.byte 0x66 #(0b01100110)
+	.byte 0x6d #(0b01101101)
+	.byte 0xfD #(0b01111101)
+	.byte 0x07 #(0b00000111)
+	.byte 0xff #(0b01111111)
+	.byte 0xDf #(0b01101111)
