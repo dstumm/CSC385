@@ -29,6 +29,24 @@ INIT_INVASION:
         addi r6, r6, 1
         blt r6, r7, INIT_ALIEN_STATE
 
+    movia r6, INVASION_MOVE_TIMER                   # reset move timer
+    stw r0, 0(r6)
+
+    movia r6, INVASION_SHOT_TIMER                   # reset shot timer
+    stw r0, 0(r6)
+
+    ret
+
+UPDATE_INVASION:
+    subi sp, sp, 4
+    stw ra, 0(sp)
+
+    call DRAW_INVASION
+    call MOVE_INVASION
+    call INVASION_AI
+
+    ldw ra, 0(sp)
+    addi sp, sp, 4
     ret
 
 # Draws all the aliens.
@@ -99,8 +117,6 @@ DRAW_INVASION:
             mov r4, sp                              # rectangle
             mov r5, r22                             # sprite
             mov r6, r23                             # color
-            #mov r5, r23
-			#call drawing_fill_rect
 			call drawing_draw_bitmap
         
         NEXT_ALIEN:        
@@ -131,10 +147,20 @@ DRAW_INVASION:
     ret
 
 MOVE_INVASION:
-    # TODO: check if we should move at all
-
     movia r4, INVASION_STATE
     ldw r5, 0(r4)
+
+    movia r6, INVASION_MOVE_TIMER
+    ldw r7, 0(r6)                                   # ticks since last move
+    andi r8, r5, 0xFF                               # number of alive aliens
+
+    bge r7, r8, DO_MOVE                             # move more frequently when there are less aliens
+    addi r7, r7, 1                                  # increment move timer ...
+    stw r7, 0(r6)                                   # ...
+    ret                                             # ... and done
+
+DO_MOVE:
+    stw r0, 0(r6)                                   # reset move timer
 
     movia r6, INVASION_DIRECTION_MASK               # get direction
     and r6, r5, r6
@@ -146,6 +172,14 @@ MOVE_INVASION:
     beq r6, r0, MOVE_INVASION_LEFT
 
     MOVE_INVASION_RIGHT:
+        #movia r4, MAX_X                             # check for collision with right edge of screen
+        #call FIND_COLUMN                            #
+        #blt r2, r0, DO_MOVE_RIGHT                   # invalid column, no collision, just move right
+
+        #mov r4, r2                                  # valid column, possible collision
+        #call FIND_IN_COLUMN                         # check for live alien in column
+        #bgt r2, r0, MOVE_INVASION_DOWN              # alive alien in column, move down
+
         movia r6, INVASION_POSITION
         ldh r7, 0(r6)                               # current invasion x position
         movia r8, MAX_X                             # right edge of screen
@@ -175,6 +209,14 @@ MOVE_INVASION:
         ret
 
     MOVE_INVASION_LEFT:
+        #movia r4, MIN_X                             # Check for collision with left edge of screen
+        #call FIND_COLUMN                            # 
+        #blt r2, r0, DO_MOVE_LEFT                    # invalid column, no collision, just move
+
+        #mov r4, r2                                  # valid column, possible collision
+        #call FIND_IN_COLUMN                         # check for live alien in column
+        #bgt r2, r0, MOVE_INVASION_DOWN              # live alien found, move down
+
         movia r6, INVASION_POSITION
         ldh r7, 0(r6)                               # current invasion x position
         movia r8, MIN_X                             # left edge of screen
@@ -215,8 +257,125 @@ MOVE_INVASION:
         
     ret
 
-ALIEN_BULLET_COLLISION:
+# Fire bullets
+INVASION_AI:
+    subi sp, sp, 4
+    stw ra, 0(sp)
+
+    movia r4, PLAYER_STATE                          # get score
+    ldw r5, 8(r4)
+
+    movi r6, 0x30                                   # figure out the reload rate based on player's score 
+    movi r7, 200
+    blt r5, r7, CHECK_TIMER
+    movi r6, 0x10
+    movi r7, 1000
+    blt r5, r7, CHECK_TIMER
+    movi r6, 0x0B
+    movi r7, 2000
+    blt r5, r7, CHECK_TIMER
+    movi r6, 0x08
+    movi r7, 3000
+    blt r5, r7, CHECK_TIMER
+    movi r6, 0x07
+
+CHECK_TIMER:
+    movia r4, INVASION_SHOT_TIMER
+    ldw r5, 0(r4)
+    bge r5, r6, TRY_TO_FIRE                         # shot timer expired, try to fire
+    
+    addi r5, r5, 1                                  # increment shot timer and done
+    stw r5, 0(r4)
+    br INVASION_AI_DONE
+
+TRY_TO_FIRE:
+    call FIND_COLUMN
+    blt r2, r0, INVASION_AI_DONE                    # no column is over the player, don't fire
+
+    mov r4, r2
+    call FIND_IN_COLUMN
+    beq r2, r0, INVASION_AI_DONE                    # no alive aliens in the column, don't fire
+
+    mov r4, r3
+    call GET_ALIEN_POSITION
+
+    movi r5, ALIEN_SPRITE_HEIGHT                    # adjust to bottom of sprite
+    slli r5, r5, 16
+    add r4, r2, r5
+
+    movi r5, 2                                      # adjust to center of sprite
+    movi r6, ALIEN_SPRITE_WIDTH
+    div r5, r6, r5
+    add r4, r4, r5
+
+    call FireEnemy
+    beq r2, r0, INVASION_AI_DONE                    # failed to fire
+
+    movia r4, INVASION_SHOT_TIMER                   # reset shot timer
+    stw r0, 0(r4)
+
+INVASION_AI_DONE:
+    ldw ra, 0(sp)
+    addi sp, sp, 4
     ret
+    
+#
+#
+#PLAYER_BULLET_COLLISION:
+#    subi sp, sp, 16
+#    stw ra, 12(sp)
+#
+#    movia r5, ?????
+#    ldw r4, 0(r5)                                   # find alive alien at bullet position
+#    mov r5, sp
+#    call GET_ALIEN
+#
+#    beq r2, r0, _NO_COLLISION                        # nothing alive there
+#
+#    movia r4,  ???
+#    mov r5, sp
+#    ldh r6, 2(r4)                                   # get y position of bullet
+#    ldh r7, 2(r5)                                   # get y position of alien
+#
+#_GET_MIN_Y:
+#    sub r8, r6, r7                                  # get position of top of bullet within sprite
+#    bge r8, r0, _GET_MAX_Y
+#    mov r8, r0                                      # top is outside sprite, reset to 0
+#
+#_GET_MAX_Y:
+#    ldh r9, 6(r4)
+#    add r9, r9, r6                                  # bottom of bullet
+#    sub r9, r9, r7                                  # bottom of bullet within sprite
+#    bge r9, r0, _GET_X
+#    ldh r10, 6(r5)
+#    ble r9, r10, _GET_X
+#    movi r9, -1                                     # bottom of bullet is outside sprite
+#
+#_GET_X:
+#    ldh r10, 0(r4)                                  # get x offset within sprite
+#    ldh r11, 0(r5)                                  # (bullet guaranteed to be in range)
+#    sub r10, r10, r11
+#
+#    
+#
+#_CHECK_PIXEL:
+#    ble r8, r9, _NO_COLLISION
+#    ldb ???, ???
+#    bgt ???, r0, _COLLISION
+#    add ???, ???, ???
+#    addi r8, r8, 1
+#    br _CHECK_PIXEL
+#
+#_COLLISION:
+#    mov r4, ?
+#    call KILL_ALIEN
+#    # TODO: adjust score
+#
+#_NO_COLLISION:
+#    ldw ra, 12(sp)
+#    addi sp, sp, 16
+#    ret
+
 
 # Get the position of an alien at the given index
 #
@@ -226,8 +385,87 @@ ALIEN_BULLET_COLLISION:
 #
 # r2: position
 GET_ALIEN_POSITION:
-	movia r2, 0x0
+    movi r5, ALIEN_COLS
+    div r6, r4, r5                                  # row index
+    mul r7, r6, r5
+    sub r7, r4, r7                                  # column index
+
+    movia r5, INVASION_POSITION
+
+    ldh r2, 0(r5)                                   # current y position
+    muli r6, r6, GRID_HEIGHT                        # compute row offset
+    addi r6, r6, ALIEN_SPRITE_HEIGHT
+    sub r2, r2, r6                                  # subtract from current position
+
+    ldh r8, 2(r5)                                   # current x position
+    muli r7, r7, GRID_WIDTH                         # compute column offset
+    add r8, r8, r7                                  # add to current position
+
+    slli r2, r2, 16                                 # combine x/y positions
+    or r2, r2, r8
+
   ret
+
+# Get alien for the given x/y position.
+#
+# r4: position
+# r5: pointer to memory for position, size and sprite (12 bytes)
+#
+# r2: success
+# r3: alien index
+GET_ALIEN:
+    mov r17, r5
+    movia r18, ALIENS
+
+    srli r16, r4, 16                                # save y position
+
+    movia r6, 0xFFFF                                # find column
+    and r4, r4, r6                                 
+    call FIND_COLUMN
+    blt r2, r0, GET_FAILED  
+
+    add r19, r18, r2
+    sth r3, 0(r17)                                  # store x position
+
+    mov r4, r16                                     # find row
+    call FIND_ROW
+    blt r2, r0, GET_FAILED
+    sth r3, 2(r17)                                  # store y position
+
+    muli r4, r2, ALIEN_COLS                         # make sure alien is alive
+    add r19, r19, r4
+    ldb r4, 0(r19)
+    beq r4, r0, GET_FAILED
+
+    movi r4, ALIEN_SPRITE_WIDTH                     # store sprite size
+    sth r4, 4(r17)
+    movi r4, ALIEN_SPRITE_HEIGHT
+    sth r4, 6(r17)
+
+    movia r4, INVASION_STATE
+    ldw r5, 0(r4)
+    movia r6, ALIEN_SPRITE_STATE_MASK
+    and r5, r5, r6
+
+    srli r2, r2, 1                                  # lookup sprite
+    slli r2, r2, 2
+    movia r6, ALIEN_SPRITE_TABLE
+    add r6, r2, r2
+    ldw r7, 0(r6)
+    beq r5, r0, _STASH_SPRITE_ADDRESS
+    addi r7, r7, ALIEN_SPRITE_SIZE
+    
+_STASH_SPRITE_ADDRESS:
+    stw r7, 8(r17)
+    
+    movi r2, 1                                      # success
+    sub r3, r19, r18                                # alien index
+
+    ret
+
+GET_FAILED:
+    mov r2, r0
+    ret
 
 # Kills the alien at the given index.
 #
@@ -260,10 +498,98 @@ KILL_ALIEN:
 
     ret
 
+
+# Find the column for the given x coordinate.
+#
+# r4: x coordinate
+#
+# r2: column index
+# r3: x position of column
+FIND_COLUMN:
+    movia r5, INVASION_POSITION                      # get invasion position
+    ldh r5, 0(r5)
+    sub r4, r5, r4                                  # convert x coordinate relative to invasion position
+    blt r4, r0, FIND_COLUMN_FAIL                    # out of bounds...
+
+    movi r6, GRID_WIDTH                             # get column index
+    div r2, r4, r6
+
+    movi r6, ALIEN_COLS
+    bge r2, r6, FIND_COLUMN_FAIL                    # out of bounds...
+
+    muli r3, r2, GRID_WIDTH                         # compute x position for column
+    add r3, r3, r17
+    ret
+
+FIND_COLUMN_FAIL:
+    movi r2, -1
+    ret
+
+# Find the row for the given y coordinate.
+#
+# r4: y coordinate
+#
+# r2: row index
+# r3: y position of row
+FIND_ROW:
+    movia r5, INVASION_POSITION                     # get invasion position
+    ldh r5, 2(r5)
+    sub r4, r4, r5                                  # convert y coordinate relative to invasion position
+    blt r4, r0, FIND_ROW_FAIL                       # out of bounds...
+
+    movi r6, GRID_HEIGHT                            # get row index
+    div r2, r4, r6
+
+    movi r6, ALIEN_ROWS                                
+    bge r2, r6, FIND_ROW_FAIL                       # out of bounds....
+
+    sub r2, r6, r2
+
+    muli r3, r2, GRID_HEIGHT                        # compute y position for row
+    add r3, r3, r5
+    addi r3, r3, ALIEN_SPRITE_HEIGHT                # offset to top of sprite
+    ret
+
+FIND_ROW_FAIL:
+    movi r2, -1
+    ret
+
+# Find an alive alien in the given column, starting at the lowest alien
+#
+# r4: column number
+#
+# r2: 1 if found
+# r3: index of alien
+FIND_IN_COLUMN:
+    mov r2, r0
+    mov r3, r0
+
+    movi r5, ALIEN_COLS                             # is it a valid column index?
+    blt r4, r0, NO_LIFE_IN_COLUMN
+    bge r4, r5, NO_LIFE_IN_COLUMN
+
+    movia r5, ALIENS                                # first alien
+    addi r6, r5, N_ALIENS                           # end of aliens
+    add r7, r5, r4                                  # first alien in column
+
+    LIFE_CHECK:
+        ldb r8, 0(r7)
+        bgt r8, r0, LIFE_IN_COLUMN                  # found a live one
+        addi r7, r7, ALIEN_COLS
+        blt r7, r6, LIFE_CHECK
+
+NO_LIFE_IN_COLUMN:
+    ret
+    
+LIFE_IN_COLUMN:
+    movi r2, 1
+    sub r3, r7, r5
+
 .data
 
 .equ ALIEN_ROWS, 5
 .equ ALIEN_COLS, 11
+.equ N_ALIENS, 55
 .equ ALIEN_SPRITE_WIDTH, 16
 .equ ALIEN_SPRITE_HEIGHT, 8
 .equ ALIEN_SPRITE_SIZE, 128
@@ -277,15 +603,26 @@ KILL_ALIEN:
 
 .align 2
 INVASION_POSITION: 
-    .word 0
+    .word 0                                         # position of bottom left alien in grid
+                                                    # base: x position
+                                                    # base + 2: y position
 
 .align 2    
-INVASION_LAST_MOVE: 
-    .word 0
+INVASION_MOVE_TIMER: 
+    .word 0                                         # counts up to next move
 
 .align 2
 INVASION_STATE: 
-    .word 0
+    .word 0                                         # state of invasion
+                                                    # base: unused
+                                                    # base + 1: sprite flag (0 primary, 1 secondary)
+                                                    # base + 2: direction flag (0 right, 1 left)
+                                                    # base + 3: number of aliens still alive
+
+.align 2
+INVASION_SHOT_TIMER:
+    .word 0                                         # counts up from last shot
+
 
 # Stores the state of each alien, 1 byte each.
 # (0 = dead, 1 = exploding, 2 = alive)
