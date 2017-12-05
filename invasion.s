@@ -149,7 +149,7 @@ DECR_FIRE:
     subi r9, r9, 1
     stw r9, 0(r8)
 
-DECR MOVE:
+DECR_MOVE:
     movia r8, MOVE_COUNTER
     ldw r9, 0(r8)
     subi r9, r9, 1
@@ -272,14 +272,14 @@ ALIEN_FIRE:
     stw r18, 12(sp)
 
     # Fuzzify it a little, pick a random point to start looking (i.e. between 0 and 55)
-    call RandNum
+    call RandomNum
 
     # Isolate 0-63
     andi r16, r2, 0x4F
 
     # Now have random starting index into aliens
     # Loop through aliens until we find one thats alive or we count over 55
-    movi r17, r17, 0 # Total counter
+    movi r17, 0 # Total counter
 
     movia r9, INVASION_POSITION
     ldh r18, 0(r9)
@@ -317,7 +317,7 @@ CHECK_ALIEN:
     call FireEnemy
     # We only wana fire once
 
-ALIEN_FIRE_DONE
+ALIEN_FIRE_DONE:
     # Reset fire
     call RandomNum
     # Random number between 0 and 512

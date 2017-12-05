@@ -87,7 +87,6 @@ GameLoop:
 
 	call drawing_clear_buffer
 
-
 	#call DRAW_INVASION
 	#call MOVE_INVASION
 
