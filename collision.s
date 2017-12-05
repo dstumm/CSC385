@@ -325,6 +325,7 @@ DESTROY_PIXEL:
     # Add offset to original offset
 	srli r10, r17, 16
 	add r10, r10, r9
+	slli r10, r10, 16
 	movia r11, 0xFFFF0000
 	and r10, r10, r11
 	andi r11, r17, 0xFFFF
@@ -334,11 +335,11 @@ DESTROY_PIXEL:
     # Check its within the bounds of the shield
     srli r11, r18, 16
     movi r12, 16
-    bge r11, r12, NEXT_PIXEL
+    bgt r11, r12, NEXT_PIXEL
     blt r11, r0, NEXT_PIXEL
     andi r11, r18, 0xFFFF
     movi r12, 22
-    bge r11, r12, NEXT_PIXEL
+    bgt r11, r12, NEXT_PIXEL
     blt r11, r0, NEXT_PIXEL
 
     # Within bounds, do a probability check
@@ -390,7 +391,7 @@ PROB:
     subi r11, r11, 1
     movi r12, 22
     mul r11, r11, r12
-    andi r12, r8, 0xFFFF
+    andi r12, r18, 0xFFFF
     add r13, r11, r12
 
     # If its greater or equal to 352 we've gone over into the next
