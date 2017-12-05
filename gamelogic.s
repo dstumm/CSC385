@@ -10,6 +10,7 @@
 .equ RIGHT_BOUND, 269
 
 .equ GREEN, 0x27E4 
+.equ WHITE, 0xFFFF 
 
 
 .align 2
@@ -93,7 +94,7 @@ GameLoop:
   	call UpdatePlayer
   	call UpdateBullets
 	call UpdateShields
-  	#call CheckCollision
+  	call CheckCollision
   	call DrawUI
 
 	call drawing_swap_buffers
@@ -132,7 +133,7 @@ RestartGame:
 	movia r9, ENEMY_BULLETS
 ZERO_ENEMY_BULLET:
 	stw r0, 0(r9)
-	movia r12, 0x00040002
+	movia r12, 0x00050002
 	stw r12, 4(r9)
 	addi r10, r10, -1
 	addi r9, r9, 8
@@ -249,7 +250,7 @@ DrawUI:
 	# Loop
 	movi r16, 0
 DRAW_LIFE:
-	bge r16, r17, DRAW_SCORE
+	bge r16, r17, LABEL_START
 
 	movia r4, LIVES_UI
 	slli r8, r16, 3
@@ -262,16 +263,17 @@ DRAW_LIFE:
 	br DRAW_LIFE
 
 	# Draw score (8 chars)
+LABEL_START:
 	movi r16, 0
 DRAW_SCORE_LABEL:
 	movi r8, 8 
-	bge r16, r8, DRAW_SCORE
+	bge r16, r8, SCORE_START
 
 	# Multiply count by spacing (spaced 8)
 	slli r8, r16, 3
 	movia r9, LEFT_BOUND
 	add r8, r8, r9
-	movia r9, 0x00010007
+	movia r9, 0x00110007
 	add r8, r8, r9
 	movia r4, CHAR_RECT
 	stw r8, 0(r4)
@@ -282,10 +284,13 @@ DRAW_SCORE_LABEL:
 	movia r5, SCORE
 	add r5, r5, r8
 
-	movia r6, GREEN
+	movia r6, WHITE
 	call drawing_draw_bitmap
+	
+	addi r16, r16, 1
 	br DRAW_SCORE_LABEL
 
+SCORE_START:
 	movi r16, 0
 DRAW_SCORE:
 	movi r8, 4
@@ -297,7 +302,7 @@ DRAW_SCORE:
 	sub r8, r8, r9
 	movia r9, LEFT_BOUND
 	add r8, r8, r9
-	movia r9, 0x0011002F
+	movia r9, 0x0021002F
 	add r8, r8, r9
 	movia r4, CHAR_RECT
 	stw r8, 0(r4)
@@ -330,7 +335,7 @@ CALL_DRAW:
     movia r9, NUMBERS
     add r5, r8, r9
 
-    movia r6, GREEN
+    movia r6, WHITE
     call drawing_draw_bitmap
 
     # Divide score by 10

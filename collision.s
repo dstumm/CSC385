@@ -301,15 +301,17 @@ CHECK_SHIELD_DONE:
 # @param r4 sprite of the shield
 # @param r5 pixel index into the sprite from the top left
 ShieldHit:
-    addi sp, sp, -12
+    addi sp, sp, -16
     stw r16, 0(sp)
     stw r17, 4(sp)
-    stw ra, 8(sp)
+    stw r18, 8(sp)
+    stw ra, 12(sp)
     # Go in loop from (-2, -2) to (2, 2)
     # Depending on distance from center, set a probability of destruction
 
     # Pixel pointer
-    add r16, r4, r5
+    mov r16, r4
+	mov r17, r5
 
     # Row
     movi r9, -2 # y
@@ -321,17 +323,21 @@ DESTROY_PIXEL:
 
     # First do bounds check if this is even part of the shield
     # Add offset to original offset
-    slli r17, r9, 16
-    add r17, r17, r5
-    add r17, r17, r8
+	srli r10, r17, 16
+	add r10, r10, r9
+	movia r11, 0xFFFF0000
+	and r10, r10, r11
+	andi r11, r17, 0xFFFF
+	add r11, r11, r8
+    add r18, r10, r11
 
     # Check its within the bounds of the shield
-    srli r11, r17, 16
-    movi r12, 22
+    srli r11, r18, 16
+    movi r12, 16
     bge r11, r12, NEXT_PIXEL
     blt r11, r0, NEXT_PIXEL
-    andi r11, r17, 0xFFFF
-    movi r12, 16
+    andi r11, r18, 0xFFFF
+    movi r12, 22
     bge r11, r12, NEXT_PIXEL
     blt r11, r0, NEXT_PIXEL
 
@@ -339,13 +345,13 @@ DESTROY_PIXEL:
     # Calculate distance from center
     add r10, r8, r9
     # Add/Subtract 1 will give a number between 0 and 3 giving three different probabilities
-    bgt r10, r0, SUB_1
-    blt r10, r0, ADD_1
+    bgt r10, r0, POS
+    blt r10, r0, NEG
     br PROB
-ADD_1:
-    addi r10, r10, 1
-    br PROB
-SUB_1:
+NEG:
+	movi r11, -1
+	mul r10, r10, r11
+POS:
     subi r10, r10, 1
     br PROB
 PROB:
@@ -354,14 +360,23 @@ PROB:
     mul r11, r10, r11
 
     # Subtract from 10, so that pixels with distance 0 represent 10, and distance 3 represent 1. With the numbers representing probability out of 8 of being destroyed
-    movi r10, 10
+    movi r10, 15
     sub r10, r10, r11
+	
+	# Divide by 1/4 its value
+	movi r12, 4
+	div r12, r11, r12
+	sub r10, r10, r12
 
-    addi sp, sp, -4
+    addi sp, sp, -12
     stw r10, 0(sp)
+    stw r8, 4(sp)
+    stw r9, 8(sp)
     call RandomNum
     ldw r10, 0(sp)
-    addi sp, sp, 4
+    ldw r8, 4(sp)
+    ldw r9, 8(sp)
+    addi sp, sp, 12
 
     # Get the first 4 bits of the seed
     andi r11, r2, 0xF
@@ -371,11 +386,11 @@ PROB:
 
     # Pass bounds and probability check
     # Can calculate actual pixel now
-    srli r11, r17, 16
+    srli r11, r18, 16
     subi r11, r11, 1
     movi r12, 22
     mul r11, r11, r12
-    andi r12, r10, 0xFFFF
+    andi r12, r8, 0xFFFF
     add r13, r11, r12
 
     # If its greater or equal to 352 we've gone over into the next
@@ -390,21 +405,22 @@ PROB:
 NEXT_PIXEL:
     # Increment x, if greater than width go to next row
     addi r8, r8, 1
-    movi r10, 22
-    bge r8, r10, NEXT_ROW
+    movi r10, 2
+    bgt r8, r10, NEXT_ROW
     br DESTROY_PIXEL
     
 NEXT_ROW:
     addi r9, r9, 1
-    movi r10, 16
-    bge r9, r10, SHIELD_HIT_DONE
+    movi r10, 2
+    bgt r9, r10, SHIELD_HIT_DONE
     br DESTROY_ROW
 
 SHIELD_HIT_DONE:
     ldw r16, 0(sp)
     ldw r17, 4(sp)
-    ldw ra, 8(sp)
-    addi sp, sp, 12
+    ldw r18, 8(sp)
+    ldw ra, 12(sp)
+    addi sp, sp, 16
     ret
 
 RandomNum:

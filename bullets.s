@@ -68,7 +68,7 @@ ENEMY_B_APPLY:
 	# Add offset into sprite based off height to animate
 	srli r10, r10, 3 # Height / 8
 	andi r10, r10, 1
-	movi r11, 8 # Sprite size
+	movi r11, 10 # Sprite size
 	mul r10, r10, r11
 	add r5, r5, r10
 
