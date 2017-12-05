@@ -116,7 +116,9 @@ FIRE_DONE:
 #
 # Fire enemy bullet
 # @param r4 word, x/y position of bullet to create
+# @return r2 succes
 FireEnemy:
+  mov r2, r0
   # First we need to see if there is a free bullet struct
   movia r9, ENEMY_BULLETS
   movi r10, 10
@@ -132,6 +134,7 @@ GET_BULLET:
 INIT_BULLET:
   # Set bullet to the input position
   stw r4, 0(r9)
+  movi r2, 1
 
 FIRE_ENEMY_DONE:
   ret
