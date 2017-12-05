@@ -328,7 +328,6 @@ INVASION_AI_DONE:
     ret
     
 #
-#
 #PLAYER_BULLET_COLLISION:
 #    subi sp, sp, 16
 #    stw ra, 12(sp)
@@ -383,7 +382,6 @@ INVASION_AI_DONE:
 #    ldw ra, 12(sp)
 #    addi sp, sp, 16
 #    ret
-
 
 # Get the position of an alien at the given index
 #

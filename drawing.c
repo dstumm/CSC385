@@ -74,6 +74,9 @@ int drawing_init(unsigned int back_buffer_addr) {
     buffer.wib = 9;
     buffer.hib = 8;
 
+    // wait for status bit to go low
+    while(*STATUS_REGISTER & 1) {}
+
     return 0;
 }
 
@@ -81,6 +84,9 @@ int drawing_init(unsigned int back_buffer_addr) {
  * Swap front and back buffers.
  */
 int drawing_swap_buffers() {
+    // make sure last swap has finished
+    while(*STATUS_REGISTER & 1) {}
+
     buffer.base = *BUFFER_REGISTER;
     *BUFFER_REGISTER = 1;
     return 0;
@@ -90,6 +96,8 @@ int drawing_swap_buffers() {
  * Clear the back buffer.
  */
 int drawing_clear_buffer() {
+    while(*STATUS_REGISTER & 1) {}
+
     volatile void *addr = (void *)buffer.base;
 	memset((void*)addr, 0, 0x3ffff);
 	return 0;

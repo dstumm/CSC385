@@ -14,7 +14,7 @@ ALIEN_DUMMY:
 	.word 0x00100008
 
 .text
-.global CheckCollision
+.global CheckCollision, RandomNum
 
 CheckCollision:
 	addi sp, sp, -8 
