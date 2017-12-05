@@ -11,7 +11,7 @@ SEED:
 .align 2
 ALIEN_DUMMY:
 	.word 0
-	.word 0x00100008
+	.word 0x0012000A
 
 .text
 .global CheckCollision, RandomNum
@@ -112,14 +112,12 @@ CHECK_PLAYER_BULLET:
     # Index into invasion
     movi r18, 0
 
-    CHECK_ENEMY:
-
+CHECK_ENEMY:
 	movia r8, ALIENS
 	add r8, r8, r18           # r8 has index into Aliens, we need to calculate the position
 	ldb r8, 0(r8)
 	andi r8, r8, 0x1      # r8 is this aliens state
-	movi r9, 2
-	bne r8, r9, CHECK_NEXT_ENEMY # 2 = alive, only collide with living aliens
+	beq r8, r0, CHECK_NEXT_ENEMY # only collide with living aliens
 
 	# Alien is alive, get its actual
 	mov r4, r18
@@ -138,7 +136,17 @@ CHECK_PLAYER_BULLET:
 	call KILL_ALIEN
 	# r2 has points, r3 has remaining alive aliens
     mov r4, r2
+	mov r18, r5
     call PlayerPoints
+
+	# Kill the bullet
+	movia r8, PLAYER_BULLET
+	stw r0, 0(r8)
+	
+	# Should restart?
+	bgt r18, r0, CHECK_DONE
+	call RestartGame
+	br CHECK_DONE
 
 CHECK_NEXT_ENEMY:
     addi r18, r18, 1
@@ -345,25 +353,33 @@ DESTROY_PIXEL:
     blt r11, r0, NEXT_PIXEL
 
     # Within bounds, do a probability check
-    # Calculate distance from center
-    add r10, r8, r9
-    # Add/Subtract 1 will give a number between 0 and 3 giving three different probabilities
-    bgt r10, r0, POS
-    blt r10, r0, NEG
-    br PROB
-NEG:
+	mov r12, r8
+	mov r13, r9
+	blt r12, r0, NEG_8
+	blt r13, r0, NEG_9
+	br ADD_OFFSET
+
+NEG_8:
 	movi r11, -1
-	mul r10, r10, r11
-POS:
+	mul r12, r12, r11
+	bgt r13, r0, ADD_OFFSET
+
+NEG_9:
+	movi r11, -1
+	mul r13, r13, r11
+
+ADD_OFFSET:
+    # Calculate distance from center
+    add r10, r12, r13
+    # Add/Subtract 1 will give a number between 0 and 3 giving three different probabilities
     subi r10, r10, 1
-    br PROB
-PROB:
+
     # Multiply by itself (if not zero) to get numbers between 0 and 25
     beq r10, r0, ZERO
     mul r10, r10, r10
 
     # Multiply by 3 and divide by 5 to get number between 0 and 15
-    movi r11, 3
+    movi r11, 4
     mul r10, r10, r11
     movi r11, 5
     div r10, r10, r11
@@ -371,7 +387,7 @@ PROB:
 ZERO:
     # Prefer if higher probability of destruction was 15, and low probability was 0
     movi r11, 15
-    sub r10, r10, r11
+    sub r10, r11, r10
 	
     # Get random number
     addi sp, sp, -12
@@ -399,9 +415,10 @@ ZERO:
     andi r12, r18, 0xFFFF
     add r13, r11, r12
 
-    # If its greater or equal to 352 we've gone over into the next so ksip
+    # If its greater or equal to 352 orless than zero we've gone over into the next so ksip
     movi r11, 352
     bge r13, r11, NEXT_PIXEL
+	blt r13, r0, NEXT_PIXEL
     add r11, r13, r16 # r11 now has pointer to the byte with the pixel at the position of the bullet
 
     # Zero it out

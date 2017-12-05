@@ -85,7 +85,7 @@ int drawing_init(unsigned int back_buffer_addr) {
  */
 int drawing_swap_buffers() {
     // make sure last swap has finished
-    while(*STATUS_REGISTER & 1) {}
+    //while(*STATUS_REGISTER & 1) {}
 
     buffer.base = *BUFFER_REGISTER;
     *BUFFER_REGISTER = 1;

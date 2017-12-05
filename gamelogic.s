@@ -87,8 +87,7 @@ GameLoop:
 
 	call drawing_clear_buffer
 
-	#call DRAW_INVASION
-	#call MOVE_INVASION
+	call UPDATE_INVASION
 
   	call UpdatePlayer
   	call UpdateBullets
@@ -330,12 +329,21 @@ DRAW_SCORE:
 CALL_DRAW:
     # Multiply char offset by 35
     movi r9, 35
-    mul r8, r8, r9
+    mul r10, r8, r9
     movia r9, NUMBERS
-    add r5, r8, r9
+    add r5, r10, r9
 
     movia r6, WHITE
+	mov r17, r8
     call drawing_draw_bitmap
+
+	# Set the correct 7 zero
+	movia r12, ADDR_7SEG
+	add r12, r12, r16
+	movia r13, SEVENSEGNUM
+	add r13, r13, r17
+	ldb r13, 0(r13)
+	stbio r13, 0(r12)
 
     # Divide score by 10
     movi r9, 10

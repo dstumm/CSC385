@@ -1,5 +1,5 @@
 .text
-.global INIT_INVASION, DRAW_INVASION, MOVE_INVASION, KILL_ALIEN
+.global INIT_INVASION, DRAW_INVASION, MOVE_INVASION, KILL_ALIEN, UPDATE_INVASION, GET_ALIEN
 .global ALIEN_SPRITE_MEDIUM, ALIENS, GET_ALIEN_POSITION
 
 # Initialize all aliens and invasion state for the given level.
@@ -398,14 +398,15 @@ GET_ALIEN_POSITION:
 
     movia r5, INVASION_POSITION
 
-ldh r2, 0(r5)                                   # current y position
+	ldh r2, 2(r5)                                   # current y position
     muli r6, r6, GRID_HEIGHT                        # compute row offset
-    addi r6, r6, ALIEN_SPRITE_HEIGHT
+    #addi r6, r6, ALIEN_SPRITE_HEIGHT
     sub r2, r2, r6                                  # subtract from current position
 
-    ldh r8, 2(r5)                                   # current x position
+    ldh r8, 0(r5)                                   # current x position
     muli r7, r7, GRID_WIDTH                         # compute column offset
     add r8, r8, r7                                  # add to current position
+	andi r8, r8, 0xFFFF
 
     slli r2, r2, 16                                 # combine x/y positions
     or r2, r2, r8
@@ -420,6 +421,13 @@ ldh r2, 0(r5)                                   # current y position
 # r2: success
 # r3: alien index
 GET_ALIEN:
+	addi sp, sp, -20
+	stw ra, 0(sp)
+	stw r16, 4(sp)
+	stw r17, 8(sp)
+	stw r18, 12(sp)
+	stw r19, 16(sp)
+
     mov r17, r5
     movia r18, ALIENS
 
@@ -460,6 +468,8 @@ GET_ALIEN:
     ldw r7, 0(r6)
     beq r5, r0, _STASH_SPRITE_ADDRESS
     addi r7, r7, ALIEN_SPRITE_SIZE
+
+	br GET_CLEANUP
     
 _STASH_SPRITE_ADDRESS:
     stw r7, 8(r17)
@@ -467,10 +477,19 @@ _STASH_SPRITE_ADDRESS:
     movi r2, 1                                      # success
     sub r3, r19, r18                                # alien index
 
-    ret
+	br GET_CLEANUP
 
 GET_FAILED:
     mov r2, r0
+	br GET_CLEANUP
+
+GET_CLEANUP:
+	ldw ra, 0(sp)
+	ldw r16, 4(sp)
+	ldw r17, 8(sp)
+	ldw r18, 12(sp)
+	ldw r19, 16(sp)
+	addi sp, sp, 20
     ret
 
 # Kills the alien at the given index.
