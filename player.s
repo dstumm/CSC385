@@ -5,7 +5,7 @@ RESPAWN:
     .hword(0)
 
 .text
-.global UpdatePlayer, PlayerHit
+.global UpdatePlayer, PlayerHit, PlayerPoints
 
 # 
 # Playerlogic
@@ -181,3 +181,20 @@ PLAYER_HIT_DONE:
 	ldw ra, 0(sp)
 	addi sp, sp, 4
 	ret 
+
+# 
+# Player gets points
+# @param r4, points
+PlayerPoints:
+    movia r9, PLAYER_STATE
+    ldw r8, 8(r9)
+    # Isolate points
+    andi r10, r8, 0xFFFF
+    add r10, r10, r4
+    # Mask out lives
+    movia r11, 0xFFFF0000
+    and r11, r8, r11
+    # Recombine and store
+    or r8, r11, r10
+    stw r8, 8(r9)
+    ret

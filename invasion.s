@@ -29,6 +29,15 @@ INIT_ALIEN_STATE:
     addi r6, r6, 1
     blt r6, r7, INIT_ALIEN_STATE
 
+
+    # Initialize move and fire counters
+    movia r9, MOVE_COUNTER
+    movia r10, 100
+    stw r10, 0(r9)
+    movia r9, FIRE_COUNTER
+    movia r10, 200
+    stw r10, 0(r9)
+
     ret
 
 # Draws all the aliens.
@@ -132,6 +141,26 @@ NEXT_ALIEN:
 
 MOVE_INVASION:
     # TODO: check if we should move at all
+    # Update counters
+DECR_FIRE:
+    movia r8, FIRE_COUNTER
+    ldw r9, 0(r8)
+    beq r9, r0, DECR_MOVE
+    subi r9, r9, 1
+    stw r9, 0(r8)
+
+DECR MOVE:
+    movia r8, MOVE_COUNTER
+    ldw r9, 0(r8)
+    subi r9, r9, 1
+    beq r9, r0, DO_MOVE
+    br MOVE_DONE
+
+DO_MOVE:
+    # Reset move counter
+    movia r9, 200
+    stw r9, 0(r8)
+    # TODO, shrink this as game timer increases i guess
 
     movia r4, INVASION_STATE
     ldw r5, 0(r4)
@@ -172,7 +201,7 @@ DO_MOVE_RIGHT:                              # no collision, move aliens right
 	addi r7, r7, 2
 	sth r7, 0(r6)            
 
-	ret
+    br MOVE_DONE
 
 MOVE_INVASION_LEFT:
 	movia r6, INVASION_POSITION
@@ -200,7 +229,7 @@ DO_MOVE_LEFT:
 	subi r7, r7, 2
 	sth r7, 0(r6)
 
-	ret
+    br MOVE_DONE
 
 MOVE_INVASION_DOWN:
 	movia r6, INVASION_POSITION
@@ -213,7 +242,95 @@ MOVE_INVASION_DOWN:
 	xor r5, r5, r6
 	stw r5, 0(r4)
 	
-	ret
+    br MOVE_DONE
+
+MOVE_DONE:
+    # Move happened, see if we should fire call check fire
+    movia r9, FIRE_COUNTER
+    ldw r9, 0(r9)
+    beq r9, r0, DO_FIRE
+    ret
+    
+DO_FIRE:
+    addi sp, sp, -4
+    stw ra, 0(sp)
+    call ALIEN_FIRE
+    ldw ra, 0(sp)
+    addi sp, sp, 4
+    ret
+
+
+# 
+# Aliend fire
+# Go through all aliens starting at random index and have first alive one fire
+#
+ALIEN_FIRE:
+    addi sp, sp, -16
+    stw ra, 0(sp)
+    stw r16, 4(sp)
+    stw r17, 8(sp)
+    stw r18, 12(sp)
+
+    # Fuzzify it a little, pick a random point to start looking (i.e. between 0 and 55)
+    call RandNum
+
+    # Isolate 0-63
+    andi r16, r2, 0x4F
+
+    # Now have random starting index into aliens
+    # Loop through aliens until we find one thats alive or we count over 55
+    movi r17, r17, 0 # Total counter
+
+    movia r9, INVASION_POSITION
+    ldh r18, 0(r9)
+
+
+CHECK_NEXT_ALIEN:
+    addi r17, r17, 1
+    movi r9, 55
+    # Exit once we've checked all 55 aliens (presumably none are alive if we break here)
+    bgt r17, r9, ALIEN_FIRE_DONE
+
+    # Loop alien index around
+    addi r16, r16, 1
+     # Clamp index
+    blt r16, r9, CHECK_ALIEN
+    # Greater than the top index, subtract 55 to loop around
+    subi r16, r16, 55
+
+CHECK_ALIEN:
+   
+    # Get alien
+    movia r9, ALIENS
+    add r9, r9, r16
+    ldb r8, 0(r9)
+    andi r8, r8, 0x1
+
+    # Skip if dead
+    beq r8, r0, CHECK_NEXT_ALIEN
+
+    # If not dead, calculate position, call check enemy fire
+    mov r4, r16
+    call GET_ALIEN_POSITION
+
+    mov r4, r2
+    call FireEnemy
+    # We only wana fire once
+
+ALIEN_FIRE_DONE
+    # Reset fire
+    call RandomNum
+    # Random number between 0 and 512
+    andi r2, r2, 0xFF
+    addi r2, r2, 0xFF
+    movia r8, FIRE_COUNTER
+    stw r2, 0(r8)
+
+    ldw ra, 0(sp)
+    ldw r16, 4(sp)
+    ldw r17, 8(sp)
+    ldw r18, 12(sp)
+    addi sp, sp, 16
 
 ALIEN_BULLET_COLLISION:
     ret
@@ -226,7 +343,28 @@ ALIEN_BULLET_COLLISION:
 #
 # r2: position
 GET_ALIEN_POSITION:
-	movia r2, 0x0
+    # Index / 11 is row
+    movi r10, 11
+    div r8, r4, r10 # Row
+    sub r9, r4, r8 # Column
+
+    movia r10, INVASION_POSITION
+    ldw r10, 0(r10)
+    srli r11, r10, 16 # Y
+    andi r12, r10, 0xFFFF # X
+
+    movia r10, GRID_HEIGHT
+    mul r8, r8, r10 # X offset
+    movia r10, GRID_WIDTH
+    mul r9, r9, r10 # Y Offset
+    # Final x and y position (add x subtract y)
+    add r11, r11, r8
+    andi r11, r11, 0xFFFF
+    sub r12, r12, r9
+    slli r12, r12, 16
+
+    # Combine
+    or r2, r12, r11
 	ret
 
 # Kills the alien at the given index.
@@ -261,6 +399,14 @@ KILL_ALIEN:
     ret
 
 .data
+
+.align  2
+MOVE_COUNTER:
+    .word 0
+
+.align 2
+FIRE_COUNTER:
+    .word 0
 
 .equ ALIEN_ROWS, 5
 .equ ALIEN_COLS, 11

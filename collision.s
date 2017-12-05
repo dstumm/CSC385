@@ -136,7 +136,9 @@ CHECK_PLAYER_BULLET:
 	stw r0, 0(r16)
 	mov r4, r18
 	call KILL_ALIEN
-	# r2 has pointers, r3 has remaining alive aliens
+	# r2 has points, r3 has remaining alive aliens
+    mov r4, r2
+    call PlayerPoints
 
 CHECK_NEXT_ENEMY:
     addi r18, r18, 1
@@ -163,7 +165,7 @@ CHECK_SHIELD:
 	add r6, r6, r8        # Sprite pointer
     mov r7, r17           # Player/enemy bullet
 
-	# Call recursive function on shield, returns collision happens in r2, collision row/column in r3
+	# Call check on shield, returns collision happens in r2, collision row/column in r3
 	call CheckShield
 	beq r2, r0, CHECK_NEXT_S
 
@@ -314,10 +316,10 @@ ShieldHit:
 	mov r17, r5
 
     # Row
-    movi r9, -2 # y
+    movi r9, -4 # y
 DESTROY_ROW:
     # Column
-    movi r8, -2 # x
+    movi r8, -3 # x
 
 DESTROY_PIXEL:
 
@@ -339,7 +341,7 @@ DESTROY_PIXEL:
     blt r11, r0, NEXT_PIXEL
     andi r11, r18, 0xFFFF
     movi r12, 22
-    bgt r11, r12, NEXT_PIXEL
+    bge r11, r12, NEXT_PIXEL
     blt r11, r0, NEXT_PIXEL
 
     # Within bounds, do a probability check
@@ -356,19 +358,22 @@ POS:
     subi r10, r10, 1
     br PROB
 PROB:
-    # Multiply by 3 to get number between 0 and 9
-    movi r11, 3
-    mul r11, r10, r11
+    # Multiply by itself (if not zero) to get numbers between 0 and 25
+    beq r10, r0, ZERO
+    mul r10, r10, r10
 
-    # Subtract from 10, so that pixels with distance 0 represent 10, and distance 3 represent 1. With the numbers representing probability out of 8 of being destroyed
-    movi r10, 15
+    # Multiply by 3 and divide by 5 to get number between 0 and 15
+    movi r11, 3
+    mul r10, r10, r11
+    movi r11, 5
+    div r10, r10, r11
+
+ZERO:
+    # Prefer if higher probability of destruction was 15, and low probability was 0
+    movi r11, 15
     sub r10, r10, r11
 	
-	# Divide by 1/4 its value
-	movi r12, 4
-	div r12, r11, r12
-	sub r10, r10, r12
-
+    # Get random number
     addi sp, sp, -12
     stw r10, 0(sp)
     stw r8, 4(sp)
@@ -379,11 +384,11 @@ PROB:
     ldw r9, 8(sp)
     addi sp, sp, 12
 
-    # Get the first 4 bits of the seed
+    # Only use the first 4 bits of the seed
     andi r11, r2, 0xF
 
-    # If r10 is greater than these 4 bits, destroy the pixel
-    blt r10, r11, NEXT_PIXEL
+    # If r10 is less than these 4 bits, destroy the pixel
+    ble r10, r11, NEXT_PIXEL
 
     # Pass bounds and probability check
     # Can calculate actual pixel now
@@ -394,7 +399,7 @@ PROB:
     andi r12, r18, 0xFFFF
     add r13, r11, r12
 
-    # If its greater or equal to 352 we've gone over into the next
+    # If its greater or equal to 352 we've gone over into the next so ksip
     movi r11, 352
     bge r13, r11, NEXT_PIXEL
     add r11, r13, r16 # r11 now has pointer to the byte with the pixel at the position of the bullet
@@ -406,13 +411,14 @@ PROB:
 NEXT_PIXEL:
     # Increment x, if greater than width go to next row
     addi r8, r8, 1
-    movi r10, 2
+    movi r10, 3
     bgt r8, r10, NEXT_ROW
     br DESTROY_PIXEL
     
 NEXT_ROW:
     addi r9, r9, 1
-    movi r10, 2
+
+    movi r10, 4
     bgt r9, r10, SHIELD_HIT_DONE
     br DESTROY_ROW
 

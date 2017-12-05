@@ -1,5 +1,5 @@
 .text
-.global Fire, FireEnemy, UpdateBullets
+.global Fire, FireEnemy, UpdateBullets, EnemyCheckFire
 # 
 # Update all bullets
 #
@@ -140,6 +140,3 @@ INIT_BULLET:
 
 FIRE_ENEMY_DONE:
 	ret
-
-
-
