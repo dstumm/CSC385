@@ -24,10 +24,19 @@ INIT_INVASION:
     movia r6, ALIENS                                # set all aliens to alive
     addi r7, r6, ALIEN_ROWS * ALIEN_COLS
     movi r8, 0x01
-    INIT_ALIEN_STATE:
-        stb r8, 0(r6)
-        addi r6, r6, 1
-        blt r6, r7, INIT_ALIEN_STATE
+INIT_ALIEN_STATE:
+    stb r8, 0(r6)
+    addi r6, r6, 1
+    blt r6, r7, INIT_ALIEN_STATE
+
+
+    # Initialize move and fire counters
+    movia r9, MOVE_COUNTER
+    movia r10, 100
+    stw r10, 0(r9)
+    movia r9, FIRE_COUNTER
+    movia r10, 200
+    stw r10, 0(r9)
 
     movia r6, INVASION_MOVE_TIMER                   # reset move timer
     stw r0, 0(r6)
@@ -231,30 +240,29 @@ DO_MOVE:
         add r8, r10, r8                             # first alien to check
         addi r9, r10, ALIEN_ROWS * ALIEN_COLS       # end of aliens array
         movi r10, 1                                 # alive state
-    
         CHECK_LEFT_EDGE_COLLISION:
-            ldb r11, 0(r8)
-            beq r11, r10, MOVE_INVASION_DOWN        # an alive alien collided with edge, move down
-            addi r8, r8, ALIEN_COLS
-            blt r8, r9, CHECK_LEFT_EDGE_COLLISION   # no collision, move aliens left
+	        ldb r11, 0(r8)
+	        beq r11, r10, MOVE_INVASION_DOWN        # an alive alien collided with edge, move down
+	        addi r8, r8, ALIEN_COLS
+	        blt r8, r9, CHECK_LEFT_EDGE_COLLISION   # no collision, move aliens left
 
         DO_MOVE_LEFT:
-            subi r7, r7, 2
-            sth r7, 0(r6)
+	        subi r7, r7, 2
+	        sth r7, 0(r6)
 
-        ret
+            ret
 
     MOVE_INVASION_DOWN:
-        movia r6, INVASION_POSITION
-        ldh r7, 2(r6)                               # current y position
-        movi r8, ALIEN_DROP_DISTANCE
-        add r7, r7, r8
-        sth r7, 2(r6)
+	    movia r6, INVASION_POSITION
+	    ldh r7, 2(r6)                               # current y position
+	    movi r8, ALIEN_DROP_DISTANCE
+	    add r7, r7, r8
+	    sth r7, 2(r6)
 
-        movia r6, INVASION_DIRECTION_MASK           # toggle direction
-        xor r5, r5, r6
-        stw r5, 0(r4)
-        
+	    movia r6, INVASION_DIRECTION_MASK           # toggle direction
+	    xor r5, r5, r6
+	    stw r5, 0(r4)
+	
     ret
 
 # Fire bullets
@@ -392,7 +400,7 @@ GET_ALIEN_POSITION:
 
     movia r5, INVASION_POSITION
 
-    ldh r2, 0(r5)                                   # current y position
+ldh r2, 0(r5)                                   # current y position
     muli r6, r6, GRID_HEIGHT                        # compute row offset
     addi r6, r6, ALIEN_SPRITE_HEIGHT
     sub r2, r2, r6                                  # subtract from current position
@@ -586,6 +594,14 @@ LIFE_IN_COLUMN:
     sub r3, r7, r5
 
 .data
+
+.align  2
+MOVE_COUNTER:
+    .word 0
+
+.align 2
+FIRE_COUNTER:
+    .word 0
 
 .equ ALIEN_ROWS, 5
 .equ ALIEN_COLS, 11

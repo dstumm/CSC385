@@ -28,3 +28,7 @@ tested.
 
 December 2nd, 2017
 - James: Wrote player explosion animation w/ respawn time
+
+December 4th, 2017
+- James: Score UI working, enemy bullets are animated now, player respawn
+animation works, shield area destruction works. Enemy timed movement and timed firing basic implementation.
