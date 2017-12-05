@@ -90,8 +90,8 @@ GameLoop:
 
   	call UpdatePlayer
   	call UpdateBullets
-	call UPDATE_INVASION
 	call UpdateShields
+	call UPDATE_INVASION
   	call CheckCollision
   	call DrawUI
 

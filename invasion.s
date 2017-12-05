@@ -232,7 +232,7 @@ DO_MOVE:
         movia r8, MIN_X                             # left edge of screen
         sub r8, r8, r7                              # get distance from invasion to edge
 
-        blt r8, r7, DO_MOVE_LEFT                    # no collision, just move left
+        blt r8, r0, DO_MOVE_LEFT                    # no collision, just move left
 
         movi r9, GRID_WIDTH                         # find column that would collide with edge
         div r8, r8, r9
