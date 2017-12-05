@@ -1,6 +1,6 @@
 .data
 
-.equ SPEED_PLAYER, 0x1
+.equ SPEED_PLAYER, 0x3
 .equ SPEED_PLAYER_BULLET, 0x4
 .equ SPEED_ENEMY_BULLET, 0x2
 
@@ -87,11 +87,10 @@ GameLoop:
 
 	call drawing_clear_buffer
 
-	call UPDATE_INVASION
 
-	call UPDATE_INVASION
   	call UpdatePlayer
   	call UpdateBullets
+	call UPDATE_INVASION
 	call UpdateShields
   	call CheckCollision
   	call DrawUI

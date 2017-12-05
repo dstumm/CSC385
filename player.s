@@ -58,8 +58,11 @@ RESET:
 
 REG_RESET:
 	# Reset player position and life
+	mov r11, r9
+	movia r9, PLAYER_STATE
 	movia r10, 0x00d00098
 	stw r10, 0(r9)
+	mov r9, r11
 
 
 CHECK_FIRE:
@@ -75,8 +78,8 @@ CHECK_FIRE:
 	stw r8, 0(sp)
 	sth r9, 4(sp)
 	call Fire	
-	movia r4, 0x001000B8
-	call FireEnemy
+	#movia r4, 0x001000B8
+	#call FireEnemy
 	ldw r8, 0(sp)
 	ldh r9, 4(sp)
 	addi sp, sp, 8

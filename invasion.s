@@ -162,6 +162,7 @@ MOVE_INVASION:
     movia r6, INVASION_MOVE_TIMER
     ldw r7, 0(r6)                                   # ticks since last move
     andi r8, r5, 0xFF                               # number of alive aliens
+	srli r8, r8, 1
 
     bge r7, r8, DO_MOVE                             # move more frequently when there are less aliens
     addi r7, r7, 1                                  # increment move timer ...
@@ -271,21 +272,21 @@ INVASION_AI:
     stw ra, 0(sp)
 
     movia r4, PLAYER_STATE                          # get score
-    ldw r5, 8(r4)
+    ldh r5, 8(r4)
 
-    movi r6, 0x30                                   # figure out the reload rate based on player's score 
+    movi r6, 0x60                                   # figure out the reload rate based on player's score 
     movi r7, 200
     blt r5, r7, CHECK_TIMER
-    movi r6, 0x10
-    movi r7, 1000
+    movi r6, 0x20
+  	movi r7, 1000
     blt r5, r7, CHECK_TIMER
-    movi r6, 0x0B
+    movi r6, 0x16
     movi r7, 2000
     blt r5, r7, CHECK_TIMER
-    movi r6, 0x08
+    movi r6, 0x10
     movi r7, 3000
     blt r5, r7, CHECK_TIMER
-    movi r6, 0x07
+    movi r6, 0x0e
 
 CHECK_TIMER:
     movia r4, INVASION_SHOT_TIMER
